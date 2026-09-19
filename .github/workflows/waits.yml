@@ -9,24 +9,58 @@ on:
 
 permissions:
   contents: write
+  # 使う日が過ぎたら自分で自分を止めるために要る
+  actions: write
 
 concurrency:
   group: waits
   cancel-in-progress: false
 
+env:
+  # この日を過ぎたら動かない。
+  # queue-times.com は無料で使わせてもらっているので、
+  # 用が済んだあとも1日120回叩き続けるのはただの迷惑になる。
+  LAST_DAY: '2026-09-22'
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - id: guard
+        name: 使う日かどうか見る
+        run: |
+          today=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+          if [[ "$today" > "$LAST_DAY" ]]; then
+            echo "$today は $LAST_DAY を過ぎているので何もしない"
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── 使う日が過ぎていたら、取得せずに自分を無効化して終わる ──
+      - if: steps.guard.outputs.run == 'false'
+        name: このワークフローを止める
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/waits.yml/disable"
+          echo '役目が終わったので、このワークフローを無効にしました'
+
+      # ── ここから下は使う日だけ ──
+      - if: steps.guard.outputs.run == 'true'
+        uses: actions/checkout@v5
+
+      - if: steps.guard.outputs.run == 'true'
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
-      - name: queue-times から取得
+      - if: steps.guard.outputs.run == 'true'
+        name: queue-times から取得
         run: node scripts/fetch-waits.mjs > "$RUNNER_TEMP/waits.json"
 
-      - name: data ブランチに上書きする
+      - if: steps.guard.outputs.run == 'true'
+        name: data ブランチに上書きする
         run: |
           set -eu
           git config user.name  "github-actions[bot]"
