@@ -6,6 +6,7 @@ import SettingsScreen from './components/SettingsScreen'
 import WaitScreen from './components/WaitScreen'
 import { APP_NAME, ATTRIBUTION } from './config'
 import { AREA_NAME } from './data/areas'
+import { BY_ID } from './data/facilities'
 import { reviewPlan } from './lib/drift'
 import { mustWarnings, suggest } from './lib/suggest'
 import { hhmm, useTrip } from './lib/useTrip'
@@ -19,13 +20,34 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'set', label: '設定' },
 ]
 
+/**
+ * 「古い」と言い出すまでの分数。
+ * Actionsのcronは数分ずれるうえ、rawにも5分のキャッシュがある。
+ * 短くしすぎると、正常に動いていても警告が点きっぱなしになって意味を失う。
+ */
+const STALE_MIN = 25
+
 export default function App() {
   const [tab, setTab] = useState<Tab>('now')
-  const { state, ctx, now, auto, patch, goTo, setHiiragi, setWait, toggleMust, skip, undo, reset } =
-    useTrip()
-
-  const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
-  const stale = autoAgeMin != null && autoAgeMin > 15
+  const {
+    state,
+    ctx,
+    now,
+    auto,
+    autoStatus,
+    pendingUndo,
+    patch,
+    goTo,
+    setHiiragi,
+    setWait,
+    clearWait,
+    toggleMust,
+    skip,
+    undo,
+    undoLast,
+    dismissLast,
+    reset,
+  } = useTrip()
 
   const list = suggest(ctx)
   const best = list[0]
@@ -34,6 +56,18 @@ export default function App() {
   const warns = mustWarnings(ctx).filter((w) => w.level !== 'ok')
   const review = reviewPlan(ctx)
   const late = review.driftMin > 10
+
+  const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
+  const stale = autoAgeMin != null && autoAgeMin > STALE_MIN
+  const freshOff = autoStatus === 'failed' || stale
+
+  const setWokeNow = (v: string) => {
+    if (!v) return patch({ morningWokeAt: null })
+    const [h, m] = v.split(':').map(Number)
+    const d = new Date()
+    d.setHours(h, m, 0, 0)
+    patch({ morningWokeAt: d.toISOString() })
+  }
 
   return (
     <div className="app">
@@ -48,17 +82,59 @@ export default function App() {
       <KidBar ctx={ctx} onChange={setHiiragi} />
 
       <div className="body">
-        <p className={`fresh ${autoAgeMin == null || stale ? 'fresh--off' : ''}`}>
-          {autoAgeMin == null
-            ? '待ち時間は自動で取れていません。手で入れてください'
-            : stale
-              ? `待ち時間は${autoAgeMin}分前のデータです。古いかもしれません`
-              : `待ち時間は${autoAgeMin}分前のデータです`}
+        <p className={`fresh ${freshOff ? 'fresh--off' : ''}`}>
+          {autoStatus === 'loading' && autoAgeMin == null
+            ? '待ち時間を取りに行っています…'
+            : autoAgeMin == null
+              ? '待ち時間が自動で取れません。手で入れてください'
+              : stale
+                ? `待ち時間は${autoAgeMin}分前のデータです。古いかもしれません`
+                : `待ち時間は${autoAgeMin}分前のデータです`}
         </p>
+
+        {/* 押し間違えた直後にその場で戻せるようにする。設定タブまで行かせない */}
+        {pendingUndo && (
+          <div className="undo">
+            <span className="undo__text">
+              {BY_ID[pendingUndo.id]?.name ?? pendingUndo.id}を
+              {pendingUndo.kind === 'go' ? '記録しました' : '捨てました'}
+            </span>
+            <button type="button" className="undo__btn" onClick={undoLast}>
+              取り消す
+            </button>
+            <button
+              type="button"
+              className="undo__close"
+              aria-label="閉じる"
+              onClick={dismissLast}
+            >
+              ×
+            </button>
+          </div>
+        )}
       </div>
 
       {tab === 'now' && (
         <div className="body">
+          {/*
+            眠気の予告はこのアプリの目玉だが、起床時刻が空だと一度も出ない。
+            設定タブまで行かないと気づけないので、ここで直接入れられるようにする。
+          */}
+          {!state.morningWokeAt && (
+            <div className="prompt">
+              <p className="prompt__q">柊は今朝、何時に起きましたか？</p>
+              <p className="prompt__sub">
+                入れておくと、眠くなる時間をアプリの方から先に知らせます
+              </p>
+              <input
+                className="prompt__input"
+                type="time"
+                aria-label="柊が今朝起きた時刻"
+                onChange={(e) => setWokeNow(e.target.value)}
+              />
+            </div>
+          )}
+
           <div className={`drift ${late ? 'drift--late' : 'drift--ontime'}`}>
             <div className="drift__big">
               {late
@@ -110,7 +186,7 @@ export default function App() {
                     type="button"
                     className="alt"
                     key={s.facility.id}
-                    onClick={() => goTo(s.facility.id)}
+                    onClick={() => goTo(s.facility.id, s.waitMin)}
                   >
                     <span className="alt__main">
                       <span className="alt__name">{s.facility.name}</span>
@@ -127,14 +203,27 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'plan' && <PlanScreen review={review} onSkip={skip} />}
+      {tab === 'plan' && (
+        <PlanScreen review={review} skipped={state.skipped} onSkip={skip} onUndo={undo} />
+      )}
 
       {tab === 'wait' && (
-        <WaitScreen state={state} onSetWait={setWait} onToggleMust={toggleMust} />
+        <WaitScreen
+          ctx={ctx}
+          state={state}
+          onSetWait={setWait}
+          onClearWait={clearWait}
+          onToggleMust={toggleMust}
+        />
       )}
 
       {tab === 'set' && (
-        <SettingsScreen state={state} onPatch={patch} onUndo={undo} onReset={reset} />
+        <SettingsScreen
+          state={state}
+          onPatch={patch}
+          onUndo={undo}
+          onReset={reset}
+        />
       )}
 
       {/* queue-times.com の利用条件。消さないこと */}

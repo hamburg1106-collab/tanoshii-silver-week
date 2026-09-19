@@ -2,7 +2,8 @@ import type { Suggestion } from '../types'
 
 type Props = {
   s: Suggestion
-  onGo: (id: string) => void
+  /** 待ち時間も渡す。着席時刻を「並び終わったころ」に置くために要る */
+  onGo: (id: string, waitMin: number) => void
 }
 
 export default function NextCard({ s, onGo }: Props) {
@@ -26,7 +27,7 @@ export default function NextCard({ s, onGo }: Props) {
         ))}
       </ul>
 
-      <button type="button" className="go" onClick={() => onGo(s.facility.id)}>
+      <button type="button" className="go" onClick={() => onGo(s.facility.id, s.waitMin)}>
         ここに行く
       </button>
     </div>

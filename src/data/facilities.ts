@@ -1,10 +1,10 @@
 import type { Facility } from '../types'
 
 /**
- * 9/22に候補になりうる施設だけを持つ。全37施設は入れていない。
+ * 当日の候補になりうる施設だけを持つ。全37施設は入れていない。
  * qtId は queue-times.com が返す ride id（2026-09-19に実データで確認したもの）。
  *
- * kidOk の判定基準：柊は2歳9か月で身長おおよそ90cm前後。
+ * kidOk の判定基準：同行する幼児の身長がおおよそ90cm前後。
  * 81cm制限は通る、90cm制限は当日次第なので false（乗れたら儲けもの）、102cmは不可。
  */
 export const FACILITIES: Facility[] = [
@@ -19,7 +19,7 @@ export const FACILITIES: Facility[] = [
     kidOk: true,
     indoor: true,
     dark: true,
-    note: '柊が一番喜ぶ枠。DPA対象',
+    note: '幼児が一番喜ぶ枠。DPA対象',
   },
   {
     id: 'smallworld',
@@ -44,7 +44,7 @@ export const FACILITIES: Facility[] = [
     indoor: true,
     loud: true,
     dark: true,
-    note: '大劇場・クッション席。ただし大音量なので寝ている柊は入れない',
+    note: '大劇場・クッション席。ただし大音量なので寝ている幼児は入れない',
   },
   {
     id: 'carrousel',
@@ -198,7 +198,7 @@ export const FACILITIES: Facility[] = [
     seatedMin: 4,
     kidOk: false,
     indoor: false,
-    note: '身長102cm以上。柊は不可',
+    note: '身長102cm以上。幼児は不可',
   },
 
   // ───────── アドベンチャーランド ─────────
@@ -236,7 +236,7 @@ export const FACILITIES: Facility[] = [
     kidOk: true,
     indoor: false,
     dark: true,
-    note: '終盤に暗闇と恐竜。柊が怖がる可能性',
+    note: '終盤に暗闇と恐竜。幼児が怖がる可能性',
   },
   {
     id: 'pirates',

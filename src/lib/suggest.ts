@@ -12,7 +12,7 @@ import type { Context, Facility, MustWarning, Suggestion } from '../types'
  * 当日それを読み上げて家族を動かせることが、このエンジンの合否になる。
  */
 
-/** 柊の昼寝は毎日13:30から約2時間（本人ヒアリング） */
+/** 幼児の昼寝は毎日13:30から約2時間 */
 const NAP_MIN = 120
 /** 覚醒時間。7時起き→13:30昼寝から逆算 */
 const WAKE_WINDOW_MIN = 390

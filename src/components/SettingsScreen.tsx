@@ -67,7 +67,8 @@ export default function SettingsScreen({ state, onPatch, onUndo, onReset }: Prop
       </div>
 
       <div className="section">
-        <p className="section__label">まわったところ（{state.done.length}件）</p>
+        {/* 行ったものと捨てたものが混ざると、どれを戻せばいいか分からなくなる */}
+        <p className="section__label">まわった・捨てたところ（{state.done.length}件）</p>
         {state.done.length === 0 ? (
           <div className="empty">まだありません</div>
         ) : (
@@ -76,9 +77,12 @@ export default function SettingsScreen({ state, onPatch, onUndo, onReset }: Prop
               <div className="alt" key={id}>
                 <div className="alt__main">
                   <div className="alt__name">{BY_ID[id]?.name ?? id}</div>
+                  <div className="alt__sub">
+                    {state.skipped.includes(id) ? '捨てた' : 'まわった'}
+                  </div>
                 </div>
                 <button type="button" className="alt__go" onClick={() => onUndo(id)}>
-                  取り消す
+                  戻す
                 </button>
               </div>
             ))}

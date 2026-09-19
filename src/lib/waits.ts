@@ -33,6 +33,14 @@ export async function fetchAutoWaits(signal?: AbortSignal): Promise<AutoWaits | 
     const data = (await res.json()) as Payload
     if (!data?.rides?.length) return null
 
+    // 時刻が壊れていると画面に「NaN分前のデータです」と出たうえ、
+    // 古さの判定もすり抜けて警告が出なくなる。ここで落として未取得と同じ扱いにする
+    const at = new Date(data.at)
+    if (Number.isNaN(at.getTime())) {
+      console.warn('waits: 取得時刻が読めません', data.at)
+      return null
+    }
+
     const waits: Record<string, Wait> = {}
     for (const r of data.rides) {
       const f = BY_QT_ID[r.id]
@@ -40,9 +48,13 @@ export async function fetchAutoWaits(signal?: AbortSignal): Promise<AutoWaits | 
       if (!f) continue
       waits[f.id] = { min: r.wait, open: r.open, at: data.at, source: 'auto' }
     }
-    return { at: new Date(data.at), waits }
-  } catch {
-    // 圏外でも落とさない。手入力と既定値で動きつづける
+    return { at, waits }
+  } catch (e) {
+    // 圏外でも落とさない。手入力と既定値で動きつづける。
+    // ただし無言で消すと、圏外なのか形式が変わったのか後から追えない
+    if (!(e instanceof DOMException && e.name === 'AbortError')) {
+      console.warn('waits: 取得に失敗しました', e)
+    }
     return null
   }
 }

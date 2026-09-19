@@ -1,4 +1,4 @@
-/** 参加者ID。柊は2歳9か月なのでログイン対象外 */
+/** 参加者ID。同行する幼児はログイン対象外 */
 export type PersonId = 'toshi' | 'tsuma' | 'chichi' | 'haha' | 'hiiragi'
 
 export type Person = {
@@ -39,7 +39,7 @@ export type Facility = {
   qtId?: number
   /** 乗車・鑑賞している間の着席分数。立ち見や歩行型は0 */
   seatedMin: number
-  /** 柊が同行できるか（身長制限なし・内容が2歳向け） */
+  /** 幼児が同行できるか（身長制限なし・内容が年齢に合う） */
   kidOk: boolean
   /** 屋内か。暑さと雨の判断に使う */
   indoor: boolean

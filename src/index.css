@@ -17,6 +17,12 @@
   --pumpkin: #f5892b;
   --pumpkin-soft: #fff0e0;
   --mint: #3fc4ae;
+  /*
+   * 文字に使う濃い方。明るいミントを日中の屋外で文字色に使うと、
+   * 背景とのコントラスト比が2程度しかなく読めない。
+   * 明るい色は背景（--mint-soft）側に残して、雰囲気だけ担わせる。
+   */
+  --mint-ink: #0e7566;
   --mint-soft: #ddf7f2;
   --peach: #ff7fa0;
   --peach-soft: #ffe7ee;
@@ -26,8 +32,8 @@
   --ground: #fff8f3;
   --surface: #ffffff;
   --ink: #46374f;
-  --ink-soft: #8b7c99;
-  --ink-faint: #b3a8bd;
+  --ink-soft: #6f6279;
+  --ink-faint: #7d7288;
   --line: #f0e7f5;
 
   --shadow: 0 6px 20px rgba(142, 95, 216, 0.12);
@@ -267,9 +273,15 @@ select {
   background: #fff;
   border-radius: 14px;
   padding: 11px;
+  min-height: 44px;
   font-weight: 700;
   color: var(--grape-deep);
   box-shadow: 0 2px 8px rgba(142, 95, 216, 0.14);
+  transition: transform 0.12s ease;
+}
+
+.ask__btn:active {
+  transform: scale(0.96);
 }
 
 /* ───────── 警告 ───────── */
@@ -487,8 +499,21 @@ select {
 }
 
 .wait__area {
-  font-size: 0.75rem;
-  color: var(--ink-faint);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* いまの値。自動か手入力かがひと目で分かるようにする */
+.wait__now {
+  flex: none;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.wait__now--manual {
+  color: var(--grape-deep);
 }
 
 .wait__chips {
@@ -500,7 +525,8 @@ select {
 
 .chip {
   border-radius: 999px;
-  padding: 7px 13px;
+  padding: 11px 14px;
+  min-height: 44px;
   font-size: 0.85rem;
   font-weight: 700;
   background: var(--ground);
@@ -516,6 +542,16 @@ select {
 .chip[aria-pressed='true'] {
   background: var(--grape);
   color: #fff;
+}
+
+/*
+ * 自動で取れた値は枠だけにする。
+ * 塗りつぶしと同じ見た目にすると、自分で入れたのか自動なのか区別が付かない。
+ */
+.chip--auto[aria-pressed='true'] {
+  background: #fff;
+  color: var(--grape-deep);
+  box-shadow: inset 0 0 0 2px var(--grape);
 }
 
 .chip--closed[aria-pressed='true'] {
@@ -564,10 +600,16 @@ select {
   width: 100%;
   border-radius: 999px;
   padding: 13px;
+  min-height: 48px;
   font-weight: 800;
-  color: var(--peach);
+  color: #b12a4c;
   background: var(--peach-soft);
   margin-top: 6px;
+  transition: transform 0.12s ease;
+}
+
+.danger:active {
+  transform: scale(0.97);
 }
 
 /* ───────── 待ち時間の鮮度 ───────── */
@@ -575,13 +617,112 @@ select {
 .fresh {
   margin: 12px 0 0;
   text-align: center;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 700;
-  color: var(--mint);
+  color: var(--mint-ink);
 }
 
 .fresh--off {
-  color: var(--pumpkin);
+  color: #a04d00;
+}
+
+/* ───────── 取り消し帯 ───────── */
+
+.undo {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--night);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 12px 10px 12px 16px;
+}
+
+.undo__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.undo__btn {
+  flex: none;
+  background: #fff;
+  color: var(--night);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  min-height: 44px;
+  transition: transform 0.12s ease;
+}
+
+.undo__btn:active {
+  transform: scale(0.94);
+}
+
+.undo__close {
+  flex: none;
+  width: 44px;
+  min-height: 44px;
+  color: #fff;
+  opacity: 0.7;
+  font-size: 1.1rem;
+}
+
+/* ───────── 入力を促すカード ───────── */
+
+.prompt {
+  margin-top: 14px;
+  background: var(--pumpkin-soft);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.prompt__q {
+  margin: 0 0 4px;
+  font-weight: 800;
+  color: #8a4200;
+}
+
+.prompt__sub {
+  margin: 0 0 12px;
+  font-size: 0.86rem;
+  color: #8a4200;
+  line-height: 1.6;
+}
+
+.prompt__input {
+  width: 100%;
+  border: 2px solid #f0c99b;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  min-height: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+.prompt__input:focus-visible {
+  outline: none;
+  border-color: var(--pumpkin);
+}
+
+/* ───────── 補足の一行 ───────── */
+
+.hint {
+  margin: 0 0 14px 2px;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.hint--center {
+  text-align: center;
+  margin: 18px 0 0;
 }
 
 /* ───────── ズレの見出し ───────── */
@@ -605,7 +746,7 @@ select {
 }
 
 .drift--ontime .drift__big {
-  color: var(--mint);
+  color: var(--mint-ink);
 }
 
 .drift__sub {
@@ -690,8 +831,22 @@ select {
 }
 
 .prow__note--done {
-  color: var(--mint);
+  color: var(--mint-ink);
   font-weight: 700;
+}
+
+.prow__note--skipped {
+  color: var(--ink-faint);
+  font-weight: 700;
+}
+
+.prow--skipped {
+  opacity: 0.65;
+}
+
+.prow--skipped .prow__label {
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-faint);
 }
 
 .prow__note--out {
@@ -730,20 +885,33 @@ select {
   font-size: 0.86rem;
 }
 
-.prow__skip {
+/* 指の当たり判定を44px以上に。歩きながら押すので小さいと隣を踏む */
+.prow__act {
   flex: none;
   align-self: center;
   background: var(--ground);
-  color: var(--ink-faint);
+  color: var(--ink-soft);
   border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.78rem;
+  padding: 12px 16px;
+  min-height: 44px;
+  font-size: 0.82rem;
   font-weight: 700;
+  transition: transform 0.12s ease;
 }
 
-.prow--out .prow__skip {
+.prow__act:active {
+  transform: scale(0.94);
+}
+
+.prow--out .prow__act {
   background: #fff;
-  color: var(--pumpkin);
+  color: #a04d00;
+}
+
+.prow--done .prow__act,
+.prow--skipped .prow__act {
+  background: var(--grape-soft);
+  color: var(--grape-deep);
 }
 
 /* ───────── データ提供元（queue-times の利用条件で必須） ───────── */
@@ -751,8 +919,8 @@ select {
 .credit {
   text-align: center;
   padding: 26px 16px 10px;
-  font-size: 0.78rem;
-  color: var(--ink-faint);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
 }
 
 .credit a {
@@ -781,12 +949,19 @@ select {
   flex: 1;
   border-radius: 16px;
   padding: 9px 4px;
-  font-size: 0.78rem;
+  min-height: 48px;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--ink-faint);
   display: grid;
   gap: 3px;
   justify-items: center;
+  align-content: center;
+  transition: background-color 0.12s ease;
+}
+
+.nav__btn:active {
+  background: var(--ground);
 }
 
 .nav__btn[aria-current='true'] {
