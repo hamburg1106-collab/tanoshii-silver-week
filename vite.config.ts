@@ -38,6 +38,17 @@ export default defineConfig({
             options: { cacheName: 'google-fonts-css' },
           },
           {
+            // 自動取得した待ち時間。圏外になっても最後に取れた値を出せるようにする
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*waits\.json$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'waits',
+              networkTimeoutSeconds: 6,
+              expiration: { maxEntries: 2 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
             handler: 'CacheFirst',
             options: {

@@ -1,0 +1,42 @@
+name: 待ち時間を取得
+
+on:
+  schedule:
+    # UTC。JST 9:00〜18:59 のあいだだけ5分おきに動かす。
+    # GitHub の cron は混み具合で数分ずれることがある（当日の用途では許容範囲）。
+    - cron: '*/5 0-9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: waits
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: queue-times から取得
+        run: node scripts/fetch-waits.mjs > "$RUNNER_TEMP/waits.json"
+
+      - name: data ブランチに上書きする
+        run: |
+          set -eu
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 履歴は残さず常に1コミットだけにする。
+          # 5分おきに走るので、積み上げるとデータベースの体裁になってしまう。
+          git checkout --orphan data
+          git rm -rf . > /dev/null 2>&1 || true
+          cp "$RUNNER_TEMP/waits.json" waits.json
+          git add waits.json
+          git commit -q -m "待ち時間 $(date -u '+%Y-%m-%d %H:%MZ')"
+          git push -f origin data

@@ -570,6 +570,20 @@ select {
   margin-top: 6px;
 }
 
+/* ───────── 待ち時間の鮮度 ───────── */
+
+.fresh {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mint);
+}
+
+.fresh--off {
+  color: var(--pumpkin);
+}
+
 /* ───────── ズレの見出し ───────── */
 
 .drift {

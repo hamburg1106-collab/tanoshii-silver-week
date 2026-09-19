@@ -21,8 +21,11 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('now')
-  const { state, ctx, now, patch, goTo, setHiiragi, setWait, toggleMust, skip, undo, reset } =
+  const { state, ctx, now, auto, patch, goTo, setHiiragi, setWait, toggleMust, skip, undo, reset } =
     useTrip()
+
+  const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
+  const stale = autoAgeMin != null && autoAgeMin > 15
 
   const list = suggest(ctx)
   const best = list[0]
@@ -43,6 +46,16 @@ export default function App() {
       </header>
 
       <KidBar ctx={ctx} onChange={setHiiragi} />
+
+      <div className="body">
+        <p className={`fresh ${autoAgeMin == null || stale ? 'fresh--off' : ''}`}>
+          {autoAgeMin == null
+            ? '待ち時間は自動で取れていません。手で入れてください'
+            : stale
+              ? `待ち時間は${autoAgeMin}分前のデータです。古いかもしれません`
+              : `待ち時間は${autoAgeMin}分前のデータです`}
+        </p>
+      </div>
 
       {tab === 'now' && (
         <div className="body">

@@ -3,6 +3,7 @@ import { DEFAULT_LEAVE, STORAGE_KEY } from '../config'
 import { BY_ID } from '../data/facilities'
 import type { AreaId, Context, HiiragiMode, Wait } from '../types'
 import { readStorage, writeStorage } from './storage'
+import { type AutoWaits, fetchAutoWaits, mergeWaits } from './waits'
 
 export type TripState = {
   area: AreaId
@@ -66,6 +67,24 @@ export function useTrip() {
   useEffect(() => {
     writeStorage(STORAGE_KEY, JSON.stringify(state))
   }, [state])
+
+  // 自動取得。5分おきに data ブランチのJSONを読み直す。
+  // 失敗しても握りつぶす（圏外でも手入力と既定値で動きつづける）
+  const [auto, setAuto] = useState<AutoWaits | null>(null)
+  useEffect(() => {
+    const ac = new AbortController()
+    const run = () => {
+      void fetchAutoWaits(ac.signal).then((r) => {
+        if (r) setAuto(r)
+      })
+    }
+    run()
+    const id = window.setInterval(run, 5 * 60_000)
+    return () => {
+      ac.abort()
+      clearInterval(id)
+    }
+  }, [])
 
   const patch = useCallback((p: Partial<TripState>) => {
     setState((s) => ({ ...s, ...p }))
@@ -137,12 +156,25 @@ export function useTrip() {
       sleptAt: state.sleptAt ? new Date(state.sleptAt) : null,
       morningWokeAt: state.morningWokeAt ? new Date(state.morningWokeAt) : null,
       leaveAt: todayAt(state.leaveAt),
-      waits: state.waits,
+      waits: mergeWaits(auto?.waits, state.waits, now),
       done: state.done,
       must: state.must,
     }),
-    [now, state],
+    [now, state, auto],
   )
 
-  return { state, ctx, now, patch, goTo, setHiiragi, setWait, toggleMust, skip, undo, reset }
+  return {
+    state,
+    ctx,
+    now,
+    auto,
+    patch,
+    goTo,
+    setHiiragi,
+    setWait,
+    toggleMust,
+    skip,
+    undo,
+    reset,
+  }
 }
