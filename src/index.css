@@ -1,0 +1,642 @@
+/*
+ * 楽しいシルバーウイーク — スマホ専用。
+ *
+ * 明るい配色ひとつに絞っている（ダークテーマを作らない）。
+ * 使うのは9/22の日中だけで、パステルの可愛さは暗転させると崩れるため。
+ * その代わり、背景も文字色もすべて明示的に塗る。
+ *
+ * キャラクターのシルエット・公式ロゴ・公式フォントは使わない。
+ * 丸ゴシックとパステルだけで「遊園地のかわいさ」を作る。
+ */
+
+:root {
+  /* ぶどう色を主役に、かぼちゃ色をハロウィーンのアクセントに */
+  --grape: #8e5fd8;
+  --grape-deep: #6b3fb0;
+  --grape-soft: #f1e8fd;
+  --pumpkin: #f5892b;
+  --pumpkin-soft: #fff0e0;
+  --mint: #3fc4ae;
+  --mint-soft: #ddf7f2;
+  --peach: #ff7fa0;
+  --peach-soft: #ffe7ee;
+  --night: #4b3a6b;
+  --night-soft: #e8e4f4;
+
+  --ground: #fff8f3;
+  --surface: #ffffff;
+  --ink: #46374f;
+  --ink-soft: #8b7c99;
+  --ink-faint: #b3a8bd;
+  --line: #f0e7f5;
+
+  --shadow: 0 6px 20px rgba(142, 95, 216, 0.12);
+  --shadow-lift: 0 10px 28px rgba(142, 95, 216, 0.2);
+
+  --radius: 22px;
+  --radius-lg: 28px;
+
+  /* iPhoneの下部バーぶん */
+  --nav-h: 66px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  /*
+   * iPhone は標準の「ヒラギノ丸ゴ」で止まるのでWebフォントを落とさない。
+   * Android はここまで降りてきて M PLUS Rounded 1c を読む。
+   * 丸ゴシック系を先に並べ、角ゴシックは最後の保険に置く。
+   */
+  font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN W4', 'M PLUS Rounded 1c',
+    'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 12px);
+}
+
+/* ───────── ヘッダー ───────── */
+
+.head {
+  background: linear-gradient(135deg, #9a6ae0 0%, #b878d8 55%, #ff9fb8 100%);
+  color: #fff;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) 20px 22px;
+  border-radius: 0 0 26px 26px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* きらきら。キャラクターを使わずに遊園地らしさを出すための装飾 */
+.head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.85) 1.5px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 1px, transparent 1.1px);
+  background-size: 54px 44px, 34px 30px;
+  background-position: 6px 8px, 22px 20px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.head__title {
+  margin: 0;
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.head__meta {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.head__clock {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.head__where {
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ───────── 本文の入れ物 ───────── */
+
+.body {
+  padding: 0 16px;
+}
+
+.section {
+  margin-top: 22px;
+}
+
+.section__label {
+  margin: 0 0 10px 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.08em;
+}
+
+/* ───────── 柊バー ───────── */
+
+.kid {
+  margin-top: -14px;
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-inline: 16px;
+}
+
+.kid__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kid__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.kid--genki .kid__dot {
+  background: var(--mint);
+}
+.kid--sleepy .kid__dot {
+  background: var(--grape);
+}
+.kid--asleep .kid__dot {
+  background: var(--night);
+}
+.kid--justWoke .kid__dot {
+  background: var(--peach);
+}
+
+.kid__text {
+  font-weight: 700;
+  font-size: 0.97rem;
+}
+
+.kid__sub {
+  margin: 2px 0 0 22px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.kid__btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.kid__btn {
+  border-radius: 14px;
+  padding: 9px 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--ground);
+  color: var(--ink-soft);
+  transition: transform 0.12s ease;
+}
+
+.kid__btn:active {
+  transform: scale(0.94);
+}
+
+.kid__btn[aria-pressed='true'] {
+  background: var(--grape);
+  color: #fff;
+}
+
+/* ───────── 聞いてくるやつ ───────── */
+
+.ask {
+  margin-top: 16px;
+  background: var(--grape-soft);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.ask__q {
+  margin: 0 0 4px;
+  font-weight: 800;
+  color: var(--grape-deep);
+}
+
+.ask__sub {
+  margin: 0 0 12px;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+
+.ask__btns {
+  display: flex;
+  gap: 8px;
+}
+
+.ask__btn {
+  flex: 1;
+  background: #fff;
+  border-radius: 14px;
+  padding: 11px;
+  font-weight: 700;
+  color: var(--grape-deep);
+  box-shadow: 0 2px 8px rgba(142, 95, 216, 0.14);
+}
+
+/* ───────── 警告 ───────── */
+
+.warn {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 14px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.warn--last,
+.warn--gone {
+  background: var(--pumpkin-soft);
+  color: #a04d00;
+  border-left: 5px solid var(--pumpkin);
+}
+
+.warn--soon {
+  background: var(--night-soft);
+  color: var(--night);
+  border-left: 5px solid var(--grape);
+}
+
+/* ───────── 本命カード ───────── */
+
+.next {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.next::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--grape), var(--peach), var(--pumpkin));
+}
+
+.next__name {
+  margin: 6px 0 0;
+  font-size: 1.42rem;
+  font-weight: 800;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.next__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.fact {
+  background: var(--ground);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.fact--wait {
+  background: var(--mint-soft);
+  color: #0f7a6b;
+}
+
+.fact--far {
+  background: var(--pumpkin-soft);
+  color: #a04d00;
+}
+
+.reasons {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.reasons li {
+  background: var(--grape-soft);
+  border-radius: 14px;
+  padding: 9px 14px 9px 30px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--grape-deep);
+  position: relative;
+  font-weight: 600;
+}
+
+.reasons li::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 17px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--grape);
+}
+
+.go {
+  width: 100%;
+  margin-top: 18px;
+  background: linear-gradient(135deg, var(--grape) 0%, var(--peach) 100%);
+  color: #fff;
+  border-radius: 999px;
+  padding: 16px;
+  font-size: 1.06rem;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(142, 95, 216, 0.34);
+  transition: transform 0.12s ease;
+}
+
+.go:active {
+  transform: scale(0.97);
+}
+
+/* ───────── 候補リスト ───────── */
+
+.alts {
+  display: grid;
+  gap: 10px;
+}
+
+.alt {
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: 0 3px 12px rgba(142, 95, 216, 0.09);
+  padding: 13px 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  transition: transform 0.12s ease;
+}
+
+.alt:active {
+  transform: scale(0.98);
+}
+
+.alt__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.alt__name {
+  font-weight: 700;
+  font-size: 0.97rem;
+  line-height: 1.45;
+}
+
+.alt__sub {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.alt__go {
+  flex: none;
+  background: var(--grape-soft);
+  color: var(--grape-deep);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.83rem;
+  font-weight: 800;
+}
+
+.empty {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+  box-shadow: var(--shadow);
+}
+
+/* ───────── 待ち時間の手入力 ───────── */
+
+.wait {
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: 0 3px 12px rgba(142, 95, 216, 0.09);
+  padding: 13px 15px;
+  margin-bottom: 10px;
+}
+
+.wait__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wait__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.wait__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.wait__area {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.wait__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chip {
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--ground);
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.12s ease;
+}
+
+.chip:active {
+  transform: scale(0.93);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--grape);
+  color: #fff;
+}
+
+.chip--closed[aria-pressed='true'] {
+  background: var(--ink-soft);
+}
+
+.chip--must[aria-pressed='true'] {
+  background: var(--pumpkin);
+}
+
+/* ───────── 設定 ───────── */
+
+.field {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 12px rgba(142, 95, 216, 0.09);
+}
+
+.field__label {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.field input[type='time'] {
+  width: 100%;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 14px;
+  background: var(--ground);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.field input[type='time']:focus-visible {
+  outline: none;
+  border-color: var(--grape);
+}
+
+.danger {
+  width: 100%;
+  border-radius: 999px;
+  padding: 13px;
+  font-weight: 800;
+  color: var(--peach);
+  background: var(--peach-soft);
+  margin-top: 6px;
+}
+
+/* ───────── データ提供元（queue-times の利用条件で必須） ───────── */
+
+.credit {
+  text-align: center;
+  padding: 26px 16px 10px;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.credit a {
+  color: var(--grape);
+  font-weight: 700;
+}
+
+/* ───────── 下のタブ ───────── */
+
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  max-width: 480px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+}
+
+.nav__btn {
+  flex: 1;
+  border-radius: 16px;
+  padding: 9px 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+}
+
+.nav__btn[aria-current='true'] {
+  background: var(--grape-soft);
+  color: var(--grape-deep);
+}
+
+.nav__mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.nav__btn:nth-child(2) .nav__mark {
+  border-radius: 50%;
+}
+
+.nav__btn:nth-child(3) .nav__mark {
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
