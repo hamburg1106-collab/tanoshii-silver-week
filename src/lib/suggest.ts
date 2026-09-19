@@ -37,7 +37,7 @@ function inWindow(now: Date, w: { from: string; to: string }): boolean {
 }
 
 /** 待ち時間以外にその場で使う分数 */
-function dwellMinutes(f: Facility): number {
+export function dwellMinutes(f: Facility): number {
   if (f.seatedMin > 0) return f.seatedMin
   switch (f.kind) {
     case 'greeting':
@@ -51,7 +51,10 @@ function dwellMinutes(f: Facility): number {
   }
 }
 
-function waitOf(f: Facility, ctx: Context): { min: number; open: boolean; known: boolean } {
+export function waitOf(
+  f: Facility,
+  ctx: Context,
+): { min: number; open: boolean; known: boolean } {
   const w = ctx.waits[f.id]
   if (w) return { min: w.min, open: w.open, known: true }
   return { min: f.defaultWait ?? 15, open: true, known: false }

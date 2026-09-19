@@ -570,6 +570,168 @@ select {
   margin-top: 6px;
 }
 
+/* ───────── ズレの見出し ───────── */
+
+.drift {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+
+.drift__big {
+  font-size: 1.16rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.drift--late .drift__big {
+  color: var(--pumpkin);
+}
+
+.drift--ontime .drift__big {
+  color: var(--mint);
+}
+
+.drift__sub {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.drift__out {
+  margin: 12px 0 0;
+  padding: 11px 14px;
+  background: var(--pumpkin-soft);
+  border-radius: 14px;
+  font-size: 0.88rem;
+  color: #a04d00;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.drift__hint {
+  margin-top: 6px;
+  font-weight: 400;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+
+.drift__nap {
+  margin: 10px 0 0;
+  padding: 11px 14px;
+  background: var(--night-soft);
+  border-radius: 14px;
+  font-size: 0.88rem;
+  color: var(--night);
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+/* ───────── 予定の一覧 ───────── */
+
+.plan {
+  display: grid;
+  gap: 8px;
+}
+
+.prow {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(142, 95, 216, 0.08);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.prow__time {
+  flex: none;
+  width: 3.1rem;
+  font-weight: 800;
+  font-size: 0.86rem;
+  color: var(--grape);
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+
+.prow__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.prow__label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.prow__note {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.prow__note--done {
+  color: var(--mint);
+  font-weight: 700;
+}
+
+.prow__note--out {
+  color: var(--pumpkin);
+  font-weight: 700;
+}
+
+.prow__late {
+  color: var(--pumpkin);
+  font-weight: 700;
+}
+
+.prow--done {
+  opacity: 0.6;
+}
+
+.prow--done .prow__time,
+.prow--done .prow__label {
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-faint);
+}
+
+.prow--out {
+  background: var(--pumpkin-soft);
+  box-shadow: none;
+}
+
+.prow--plain {
+  background: transparent;
+  box-shadow: none;
+  padding-block: 4px;
+}
+
+.prow--plain .prow__label {
+  color: var(--ink-faint);
+  font-size: 0.86rem;
+}
+
+.prow__skip {
+  flex: none;
+  align-self: center;
+  background: var(--ground);
+  color: var(--ink-faint);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.prow--out .prow__skip {
+  background: #fff;
+  color: var(--pumpkin);
+}
+
 /* ───────── データ提供元（queue-times の利用条件で必須） ───────── */
 
 .credit {

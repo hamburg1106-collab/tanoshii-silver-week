@@ -114,6 +114,14 @@ export function useTrip() {
     }))
   }, [])
 
+  /**
+   * 予定を捨てる。済み扱いにして以降の計算から外すだけで、
+   * 現在地も最後に座った時刻も動かさない（そこへは行っていないため）。
+   */
+  const skip = useCallback((id: string) => {
+    setState((s) => (s.done.includes(id) ? s : { ...s, done: [...s.done, id] }))
+  }, [])
+
   const undo = useCallback((id: string) => {
     setState((s) => ({ ...s, done: s.done.filter((x) => x !== id) }))
   }, [])
@@ -136,5 +144,5 @@ export function useTrip() {
     [now, state],
   )
 
-  return { state, ctx, now, patch, goTo, setHiiragi, setWait, toggleMust, undo, reset }
+  return { state, ctx, now, patch, goTo, setHiiragi, setWait, toggleMust, skip, undo, reset }
 }

@@ -1,30 +1,36 @@
 import { useState } from 'react'
 import KidBar from './components/KidBar'
 import NextCard from './components/NextCard'
+import PlanScreen from './components/PlanScreen'
 import SettingsScreen from './components/SettingsScreen'
 import WaitScreen from './components/WaitScreen'
 import { APP_NAME, ATTRIBUTION } from './config'
 import { AREA_NAME } from './data/areas'
+import { reviewPlan } from './lib/drift'
 import { mustWarnings, suggest } from './lib/suggest'
 import { hhmm, useTrip } from './lib/useTrip'
 
-type Tab = 'now' | 'wait' | 'set'
+type Tab = 'now' | 'plan' | 'wait' | 'set'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'now', label: 'いま' },
+  { id: 'plan', label: 'よてい' },
   { id: 'wait', label: '待ち時間' },
   { id: 'set', label: '設定' },
 ]
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('now')
-  const { state, ctx, now, patch, goTo, setHiiragi, setWait, toggleMust, undo, reset } = useTrip()
+  const { state, ctx, now, patch, goTo, setHiiragi, setWait, toggleMust, skip, undo, reset } =
+    useTrip()
 
   const list = suggest(ctx)
   const best = list[0]
   const alts = list.slice(1, 5)
   // 締切が近い順。ok は出さない（出すと警告が常時光って効かなくなる）
   const warns = mustWarnings(ctx).filter((w) => w.level !== 'ok')
+  const review = reviewPlan(ctx)
+  const late = review.driftMin > 10
 
   return (
     <div className="app">
@@ -40,6 +46,29 @@ export default function App() {
 
       {tab === 'now' && (
         <div className="body">
+          <div className={`drift ${late ? 'drift--late' : 'drift--ontime'}`}>
+            <div className="drift__big">
+              {late
+                ? `予定より ${review.driftMin}分 おくれています`
+                : review.driftMin < -10
+                  ? `予定より ${-review.driftMin}分 はやいです`
+                  : '予定どおりです'}
+            </div>
+            {review.next && <p className="drift__sub">つぎの予定：{review.next.label}</p>}
+
+            {review.wontFit.length > 0 && (
+              <div className="drift__out">
+                このままだと {review.wontFit.length}つ 入りません
+                {review.wontFit.map((r) => (
+                  <div key={r.item.label}>・{r.item.label}</div>
+                ))}
+                <div className="drift__hint">「よてい」で捨てるものを選べます</div>
+              </div>
+            )}
+
+            {review.napNote && <p className="drift__nap">{review.napNote}</p>}
+          </div>
+
           {warns.map((w) => (
             <div className={`warn warn--${w.level}`} key={w.facility.id}>
               {w.message}
@@ -84,6 +113,8 @@ export default function App() {
           )}
         </div>
       )}
+
+      {tab === 'plan' && <PlanScreen review={review} onSkip={skip} />}
 
       {tab === 'wait' && (
         <WaitScreen state={state} onSetWait={setWait} onToggleMust={toggleMust} />
