@@ -81,8 +81,12 @@ export const AREA_DISTANCE: Record<AreaId, Record<AreaId, number>> = (() => {
   return d
 })()
 
-/** 徒歩の分数。高齢者同伴なので分速60m（ふつうは80m）で見積もる */
-export const WALK_M_PER_MIN = 60
+/**
+ * 徒歩の分数。
+ * 両親が来なくなり3人（大人2＋ベビーカー）になったので、
+ * 高齢者ペースの分速60mをやめて分速80mに戻した。園内の歩きが48分→31分になる。
+ */
+export const WALK_M_PER_MIN = 80
 
 export function walkMinutes(from: AreaId, to: AreaId): number {
   return Math.round(AREA_DISTANCE[from][to] / WALK_M_PER_MIN)

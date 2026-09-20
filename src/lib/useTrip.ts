@@ -8,6 +8,8 @@ import { type AutoWaits, fetchAutoWaits, mergeWaits } from './waits'
 export type TripState = {
   /** 'YYYY-MM-DD'。日付が変わったら記録を捨てるために持つ */
   day: string
+  /** 実際に入園した時刻(ISO)。「入園した」を押すまで null */
+  enteredAt: string | null
   area: AreaId
   /** ISO文字列。Dateはそのまま保存できないため */
   lastSeatedAt: string | null
@@ -33,6 +35,7 @@ function todayKey(d: Date = new Date()): string {
 
 const INITIAL: TripState = {
   day: todayKey(),
+  enteredAt: null,
   area: 'bazaar',
   lastSeatedAt: null,
   hiiragi: 'genki',
@@ -181,6 +184,20 @@ export function useTrip() {
     [state],
   )
 
+  /**
+   * 入園した。手配の案内はここから解禁される。
+   *
+   * 押し忘れると何も出ないので、画面側では時刻が来たら大きく出し続ける。
+   * 押し間違いは同じボタンから取り消せる（ゲート前で早押しする人がいる）。
+   */
+  const enter = useCallback(() => {
+    setState((s) => ({
+      ...s,
+      enteredAt: s.enteredAt ? null : new Date().toISOString(),
+      area: 'bazaar',
+    }))
+  }, [])
+
   const setHiiragi = useCallback((mode: HiiragiMode) => {
     const at = new Date().toISOString()
     setState((s) => ({
@@ -265,6 +282,7 @@ export function useTrip() {
   const ctx: Context = useMemo(
     () => ({
       now,
+      enteredAt: state.enteredAt ? new Date(state.enteredAt) : null,
       area: state.area,
       lastSeatedAt: state.lastSeatedAt ? new Date(state.lastSeatedAt) : null,
       hiiragi: state.hiiragi,
@@ -290,6 +308,7 @@ export function useTrip() {
     pendingUndo,
     patch,
     goTo,
+    enter,
     setHiiragi,
     setWait,
     clearWait,

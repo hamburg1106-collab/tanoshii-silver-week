@@ -47,8 +47,14 @@ function yenLabel(a: Access): string {
  * @param secured 確保済みの手配。施設id → 確保した時刻(ISO)
  */
 export function todoActions(ctx: Context, secured: Record<string, string>): TodoAction[] {
-  const entryAt = todayAt(ctx.now, ENTRY_TIME)
-  const inPark = ctx.now >= entryAt
+  // 時計ではなく「入園した」を押したかどうかで判定する。
+  // ゲートで待たされている間に「いま買えます」と出すのが、いちばん困る嘘なので。
+  const inPark = ctx.enteredAt != null
+  // 予定時刻を過ぎているのに押されていないなら、押し忘れの可能性が高い
+  const overdue = !inPark && ctx.now >= todayAt(ctx.now, ENTRY_TIME)
+  const notYet = overdue
+    ? '「入園した」を押すと、ここに手順が出ます'
+    : `入園しないと動かせません（予定は${ENTRY_TIME}）`
 
   // 枠ごとに、直近で確保したDPAの時刻を拾う。
   // 60分のしばりは枠ごとに別々にかかる
@@ -115,7 +121,7 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
         label: `${f.name}の抽選を引く`,
         detail: '無料・1日1回きり',
         urgency: inPark ? 'now' : 'later',
-        reason: inPark ? a.hint : `入園しないと引けません（${ENTRY_TIME}以降）`,
+        reason: inPark ? a.hint : notYet,
       })
       continue
     }
@@ -132,7 +138,7 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
         label,
         detail,
         urgency: 'later',
-        reason: `入園しないと買えません（${ENTRY_TIME}以降）`,
+        reason: notYet,
       })
       continue
     }

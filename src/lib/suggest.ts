@@ -5,8 +5,12 @@ import type { Context, Facility, MustWarning, Suggestion } from '../types'
 /**
  * 提案エンジン。
  *
- * 最適化するのは待ち時間ではなく「歩行と立ち時間を抑えつつ90分ごとに着席させること」。
+ * 最適化するのは待ち時間ではなく「柊が持つかどうか」。
  * ここを間違えると、ふつうのディズニー攻略アプリになってしまう。
+ *
+ * 2026-09-21：両親が来なくなり3人になった。
+ * 「90分ごとに着席」は高齢者2名のために置いた軸なので、重みを半分に落とした。
+ * 消さないのは、ベビーカーを押す大人2人にも休息は要るため。ただし主役ではない。
  *
  * 出した点数そのものは画面に出さない。出すのは reasons の方で、
  * 当日それを読み上げて家族を動かせることが、このエンジンの合否になる。
@@ -102,17 +106,15 @@ function evaluate(f: Facility, ctx: Context): Suggestion | null {
   const sinceSeated = ctx.lastSeatedAt ? minutesBetween(ctx.lastSeatedAt, ctx.now) : 999
 
   if (f.seatedMin >= SEATED_THRESHOLD) {
-    if (sinceSeated >= 90) {
-      score += 40 + Math.min(sinceSeated - 90, 60) * 0.5
+    if (sinceSeated >= 120) {
+      score += 20 + Math.min(sinceSeated - 120, 60) * 0.25
       reasons.push(`前に座ってから${Math.round(sinceSeated)}分たっています`)
-    } else if (sinceSeated >= 60) {
-      score += 15
     }
     reasons.push(`${f.seatedMin}分ぶん座れます`)
   }
-  // 着席の価値は長さに比例しない。90分ルールを満たすかどうかが本体なので、
+  // 着席の価値は長さに比例しない。
   // 上限を付けないと70分の食事が常に1位になって他が全部潰れる。
-  score += Math.min(f.seatedMin, 20) * 1.2
+  score += Math.min(f.seatedMin, 20) * 0.6
 
   score -= waitMin * 1.5
   if (waitMin <= 10) reasons.push(`待ち${waitMin}分`)

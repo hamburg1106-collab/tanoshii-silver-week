@@ -40,6 +40,7 @@ export default function App() {
     pendingUndo,
     patch,
     goTo,
+    enter,
     setHiiragi,
     setWait,
     clearWait,
@@ -120,6 +121,29 @@ export default function App() {
 
       {tab === 'now' && (
         <div className="body">
+          {/*
+            入園したかどうかは時計では分からない。ゲートで待たされた日ほど
+            「いま買えます」の嘘が痛いので、押してもらう。
+            押されるまで手配の案内は解禁しない。
+          */}
+          {!state.enteredAt ? (
+            <button type="button" className="gate" onClick={enter}>
+              <span className="gate__big">入園した</span>
+              <span className="gate__sub">
+                押すと、抽選とDPAの手順が出ます。
+                <br />
+                ゲートを通ってから押してください
+              </span>
+            </button>
+          ) : (
+            <p className="gate__done">
+              {hhmm(new Date(state.enteredAt))} 入園
+              <button type="button" className="gate__undo" onClick={enter}>
+                取り消す
+              </button>
+            </p>
+          )}
+
           {/*
             眠気の予告はこのアプリの目玉だが、起床時刻が空だと一度も出ない。
             設定タブまで行かないと気づけないので、ここで直接入れられるようにする。

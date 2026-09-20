@@ -35,6 +35,8 @@
   --ink-soft: #6f6279;
   --ink-faint: #7d7288;
   --line: #f0e7f5;
+  /* 罫線の濃い方。--line は薄すぎて、帯や枠に使うと消えてしまう */
+  --line-strong: #d7c8e3;
 
   --shadow: 0 6px 20px rgba(142, 95, 216, 0.12);
   --shadow-lift: 0 10px 28px rgba(142, 95, 216, 0.2);
@@ -862,6 +864,65 @@ select {
 .hint--center {
   text-align: center;
   margin: 18px 0 0;
+}
+
+/* ───────── 入園ボタン ───────── */
+
+.gate {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 20px;
+  padding: 20px 18px;
+  margin-bottom: 16px;
+  background: var(--pumpkin);
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(214, 122, 44, 0.35);
+  font-family: inherit;
+}
+
+.gate:active {
+  transform: translateY(1px);
+}
+
+.gate__big {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.gate__sub {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  opacity: 0.92;
+}
+
+.gate__done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--mint-ink);
+}
+
+.gate__undo {
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 /* ───────── 入らなかったもの ───────── */
