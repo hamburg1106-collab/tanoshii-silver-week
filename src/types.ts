@@ -60,7 +60,30 @@ export type Facility = {
   window?: { from: string; to: string }
   /** 何度でも寄れるか。ベビーセンターやトイレ系だけ true */
   repeatable?: boolean
+  /** 行くために事前の手配が要るもの。無ければ並ぶだけ */
+  access?: Access
   note?: string
+}
+
+/**
+ * 「行くために何をすればいいか」。
+ *
+ * DPAは購入から60分、または利用開始時刻の早い方で次が買える。
+ * **アトラクション枠とショー枠は別カウントなので同時に持てる**（公式FAQ）。
+ * この lane はその区別のために要る。
+ */
+export type Access = {
+  kind: 'dpa' | 'ps'
+  /** DPAの枠。アトラクションとショーで別々に60分のしばりがかかる */
+  lane?: 'attraction' | 'show'
+  /** 1人あたりの円 */
+  yen?: number
+  /** 売り切れやすさ。動く順番を決める */
+  risk: 'high' | 'mid' | 'low'
+  /** 画面に出す一言 */
+  hint: string
+  /** 価格や対象が裏取りできていないもの。画面で断定しない */
+  unverified?: boolean
 }
 
 /** 柊の状態。減点ではなくモードとして扱う */

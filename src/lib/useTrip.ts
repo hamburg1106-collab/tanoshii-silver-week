@@ -23,6 +23,8 @@ export type TripState = {
   must: string[]
   /** 手入力ぶんだけ。自動取得は別に持ち、表示時に混ぜる */
   waits: Record<string, Wait>
+  /** 確保できた手配（DPA・レストラン）。施設id → 確保した時刻(ISO)。DPAの60分しばりの起点になる */
+  secured: Record<string, string>
 }
 
 function todayKey(d: Date = new Date()): string {
@@ -42,6 +44,7 @@ const INITIAL: TripState = {
   // 本人が「行きたい」と言ったもの。効率で却下されない枠
   must: ['jungle'],
   waits: {},
+  secured: {},
 }
 
 /**
@@ -205,6 +208,17 @@ export function useTrip() {
     })
   }, [])
 
+  /** 手配が取れた／取り消した。DPAの60分しばりはここから数える */
+  const toggleSecured = useCallback((id: string) => {
+    setState((s) => {
+      if (s.secured[id]) {
+        const { [id]: _removed, ...rest } = s.secured
+        return { ...s, secured: rest }
+      }
+      return { ...s, secured: { ...s.secured, [id]: new Date().toISOString() } }
+    })
+  }, [])
+
   const toggleMust = useCallback((id: string) => {
     setState((s) => ({
       ...s,
@@ -280,6 +294,7 @@ export function useTrip() {
     setWait,
     clearWait,
     toggleMust,
+    toggleSecured,
     skip,
     undo,
     undoLast,

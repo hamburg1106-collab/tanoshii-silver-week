@@ -12,8 +12,14 @@ export type PlanItem = {
   facilityId?: string
 }
 
+/**
+ * 入園予定の時刻。
+ * DPAは入園のQRを読ませたあとでないと買えないので、手配の案内はここを起点にする。
+ */
+export const ENTRY_TIME = '09:50'
+
 export const PLAN: PlanItem[] = [
-  { time: '09:50', label: '入園' },
+  { time: ENTRY_TIME, label: '入園' },
   { time: '10:15', label: 'イッツ・ア・スモールワールド', facilityId: 'smallworld' },
   { time: '11:05', label: 'ミッキーの家とミート・ミッキー', facilityId: 'meet-mickey' },
   { time: '12:10', label: 'クリスタルパレスで昼食', facilityId: 'crystalpalace' },

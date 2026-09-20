@@ -19,7 +19,14 @@ export const FACILITIES: Facility[] = [
     kidOk: true,
     indoor: true,
     dark: true,
-    note: '幼児が一番喜ぶ枠。DPA対象',
+    access: {
+      kind: 'dpa',
+      lane: 'attraction',
+      yen: 1500,
+      risk: 'high',
+      hint: '2026/9/1からDPA対象になった枠。午前中に売り切れやすい',
+    },
+    note: '幼児が一番喜ぶ枠',
   },
   {
     id: 'smallworld',
@@ -97,6 +104,13 @@ export const FACILITIES: Facility[] = [
     kidOk: true,
     indoor: true,
     dark: true,
+    access: {
+      kind: 'dpa',
+      lane: 'attraction',
+      risk: 'mid',
+      hint: 'DPA対象。価格は未確認なのでアプリで見ること',
+      unverified: true,
+    },
     note: '9/15からホリデーナイトメアー仕様。ふだんより怖くない',
   },
   {
@@ -121,7 +135,8 @@ export const FACILITIES: Facility[] = [
     kidOk: true,
     indoor: true,
     defaultWait: 45,
-    note: 'queue-timesに無い施設。待ち時間は手入力',
+    // 抽選（エントリー受付）もDPAも対象外。並ぶ以外の手段が無い
+    note: 'queue-timesに無い施設。待ち時間は手入力。手配の手段は無く並ぶだけ',
   },
   {
     id: 'goofy-play',
@@ -213,7 +228,8 @@ export const FACILITIES: Facility[] = [
     indoor: false,
     loud: true,
     dark: true,
-    note: '本人のマスト。暗い洞窟と大きな音あり',
+    // DPA対象ではない。並ぶしかないので、待ちが伸びたら時間で殴るしかない
+    note: '本人のマスト。DPAが無いので並ぶだけ。暗い洞窟と大きな音あり',
   },
   {
     id: 'tikiroom',
@@ -264,6 +280,13 @@ export const FACILITIES: Facility[] = [
     strollerOk: true,
     defaultWait: 0,
     window: { from: '14:10', to: '15:30' },
+    access: {
+      kind: 'dpa',
+      lane: 'show',
+      yen: 2500,
+      risk: 'high',
+      hint: 'ショー枠なので、アトラクションのDPAと同時に買える',
+    },
     note: 'ベビーカーのまま観られる。ただし大音量',
   },
 
@@ -278,7 +301,12 @@ export const FACILITIES: Facility[] = [
     indoor: true,
     defaultWait: 0,
     window: { from: '11:30', to: '13:30' },
-    note: 'ブッフェ・子供椅子あり・3歳以下無料。事前受付済みの想定',
+    access: {
+      kind: 'ps',
+      risk: 'high',
+      hint: '事前受付が取れていなければ、当日枠はオンライン9:00／店頭10:00から',
+    },
+    note: 'ブッフェ・子供椅子あり・3歳以下無料。幼児も人数に入れて予約すること',
   },
   {
     id: 'plazapavilion',

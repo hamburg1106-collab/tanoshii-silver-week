@@ -3,10 +3,12 @@ import KidBar from './components/KidBar'
 import NextCard from './components/NextCard'
 import PlanScreen from './components/PlanScreen'
 import SettingsScreen from './components/SettingsScreen'
+import TodoList from './components/TodoList'
 import WaitScreen from './components/WaitScreen'
 import { APP_NAME, ATTRIBUTION } from './config'
 import { AREA_NAME } from './data/areas'
 import { BY_ID } from './data/facilities'
+import { todoActions } from './lib/actions'
 import { reviewPlan } from './lib/drift'
 import { mustWarnings, suggest } from './lib/suggest'
 import { hhmm, useTrip } from './lib/useTrip'
@@ -42,6 +44,7 @@ export default function App() {
     setWait,
     clearWait,
     toggleMust,
+    toggleSecured,
     skip,
     undo,
     undoLast,
@@ -56,6 +59,7 @@ export default function App() {
   const warns = mustWarnings(ctx).filter((w) => w.level !== 'ok')
   const review = reviewPlan(ctx)
   const late = review.driftMin > 10
+  const todos = todoActions(ctx, state.secured)
 
   const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
   const stale = autoAgeMin != null && autoAgeMin > STALE_MIN
@@ -164,6 +168,9 @@ export default function App() {
             </div>
           ))}
 
+          {/* 急ぎの手配だけ。全部は「よてい」に出す */}
+          <TodoList actions={todos} secured={state.secured} onToggle={toggleSecured} compact />
+
           <div className="section">
             <p className="section__label">つぎ、ここ</p>
             {best ? (
@@ -204,7 +211,15 @@ export default function App() {
       )}
 
       {tab === 'plan' && (
-        <PlanScreen review={review} skipped={state.skipped} onSkip={skip} onUndo={undo} />
+        <PlanScreen
+          review={review}
+          skipped={state.skipped}
+          todos={todos}
+          secured={state.secured}
+          onToggleSecured={toggleSecured}
+          onSkip={skip}
+          onUndo={undo}
+        />
       )}
 
       {tab === 'wait' && (

@@ -1,17 +1,40 @@
+import type { TodoAction } from '../lib/actions'
 import type { Review } from '../lib/drift'
 import { hhmm } from '../lib/useTrip'
+import TodoList from './TodoList'
 
 type Props = {
   review: Review
   /** 捨てたもののid。行ったものと区別して出す */
   skipped: string[]
+  todos: TodoAction[]
+  secured: Record<string, string>
+  onToggleSecured: (id: string) => void
   onSkip: (id: string) => void
   onUndo: (id: string) => void
 }
 
-export default function PlanScreen({ review, skipped, onSkip, onUndo }: Props) {
+export default function PlanScreen({
+  review,
+  skipped,
+  todos,
+  secured,
+  onToggleSecured,
+  onSkip,
+  onUndo,
+}: Props) {
   return (
     <div className="body">
+      {(todos.length > 0 || Object.keys(secured).length > 0) && (
+        <div className="section">
+          <p className="section__label">行くためにやること</p>
+          <p className="hint">
+            並ぶだけで入れるものは出ません。手配が要るものだけです。
+          </p>
+          <TodoList actions={todos} secured={secured} onToggle={onToggleSecured} />
+        </div>
+      )}
+
       <div className="section">
         <p className="section__label">もとの予定と、いまの見込み</p>
 
