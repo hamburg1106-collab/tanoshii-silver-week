@@ -30,7 +30,8 @@ export const ENTRY_TIME = '09:50'
 /**
  * 各行の時刻は、ひとつ前の行が終わる時刻＋エリア間の徒歩分から積み上げてある。
  * 徒歩は areas.ts の距離を分速60m（高齢者ペース）で割った値。
- * エリア間の合計は約2,850m・49分。列の中や店を探す歩きは別で、実際はもう少し歩く。
+ * エリア間の合計は約2,900m・49分。列の中や店を探す歩きは別で、実際はもう少し歩く。
+ * お土産を最後に回したので、順路は入口に戻らない一周になっている。
  */
 export const PLAN: PlanItem[] = [
   { time: ENTRY_TIME, label: '入園（すぐ抽選2件とプーさんDPA）' },
@@ -43,15 +44,16 @@ export const PLAN: PlanItem[] = [
   { time: '11:46', label: 'プーさんのハニーハント（DPA）', facilityId: 'pooh' },
   { time: '12:05', label: 'クイーン・オブ・ハートで昼食', facilityId: 'queenofhearts' },
   // パレードは13:00〜13:45でルートを一周する。店を出てファンタジーランド側で拾う
-  { time: '13:15', label: 'お昼のパレードをチラ見', facilityId: 'harmony' },
-  // ここから約2時間、柊は昼寝。ベビーカーで動ける用事だけを並べてある
-  { time: '13:43', label: 'ミッキーワッフルとお土産', facilityId: 'bazaar-shop' },
-  { time: '14:35', label: 'チキンとトマトのカルツォーネ', facilityId: 'calzone' },
-  { time: '14:56', label: 'グローブシェイプ・チキンパオ', facilityId: 'pao' },
+  { time: '13:05', label: 'お昼のパレードをチラ見', facilityId: 'harmony' },
+  // ここから約2時間、柊は昼寝。降ろさずに乗れる船で、大人が15分座る
+  { time: '13:40', label: '蒸気船マークトウェイン号', facilityId: 'marktwain' },
+  { time: '14:20', label: 'グローブシェイプ・チキンパオ', facilityId: 'pao' },
   // 起床後の主役。トゥーンタウンにいるうちに済ませる
   { time: '15:15', label: 'ミッキーの家とミート・ミッキー', facilityId: 'meet-mickey' },
-  // 退園まで52分の余白。祝日は待ちがブレるので、ここは埋めずに置いてある
-  { time: '17:30', label: '出発' },
+  { time: '16:30', label: 'ミッキーのフィルハーマジック', facilityId: 'philharmagic' },
+  // 荷物になるので最後。帰り道のワールドバザールで30分とってある
+  { time: '17:17', label: 'ワールドバザールでお土産', facilityId: 'bazaar-shop' },
+  { time: '18:00', label: '出発' },
 ]
 
 /**
@@ -63,11 +65,10 @@ export const LEFT_OUT: { facilityId: string; why: string }[] = [
   { facilityId: 'mmw', why: '抽選しだい。25分の着席ショーなので高齢者2名の休息にはなる' },
   { facilityId: 'pirates', why: '53分かかる。膝の上では乗れず、暗くて音も大きい' },
   { facilityId: 'carrousel', why: 'ファンタジーランドの午前が埋まった' },
-  { facilityId: 'philharmagic', why: '16分の暗い3Dシアター。大音量で幼児には重い' },
   { facilityId: 'westernriver', why: '終盤の暗闇と恐竜。43分かかるわりに不安が大きい' },
-  { facilityId: 'villains', why: '16:35開始・約45分。17:30出発だと最後まで観られない' },
-  { facilityId: 'pop-pepper', why: 'カウボーイ・クックハウス前。ウエスタンランドに行く予定が無い' },
-  { facilityId: 'porkroll', why: 'ペコスビル・カフェ。同じくウエスタンランド' },
+  { facilityId: 'villains', why: '16:35開始・約45分。18:00出発でも最後まで観られない' },
+  { facilityId: 'waffle', why: '食べ歩きを2件に絞った。お土産と同じ場所なので最後に足せる' },
+  { facilityId: 'pop-pepper', why: 'カウボーイ・クックハウス前。ウエスタンランドを通るのは昼寝中だけ' },
 ]
 
 /** 予定していた昼寝の時間帯。毎日13:30から約2時間、当日は起床が早いぶん前倒し */

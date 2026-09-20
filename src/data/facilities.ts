@@ -205,6 +205,9 @@ export const FACILITIES: Facility[] = [
     kidOk: true,
     indoor: false,
     lullaby: true,
+    // ベビーカーのまま乗れる数少ないライド。昼寝中でも大人が15分座れる
+    strollerOk: true,
+    note: '寝ている柊を降ろさずに乗れる。昼寝の時間帯の休息枠として貴重',
   },
   {
     id: 'bigthunder',
@@ -444,28 +447,6 @@ export const FACILITIES: Facility[] = [
     indoor: true,
     defaultWait: 15,
     note: 'グレートアメリカン・ワッフルカンパニー。入口のワールドバザール内',
-  },
-  {
-    id: 'calzone',
-    name: 'チキンとトマトのカルツォーネ',
-    area: 'tomorrow',
-    kind: 'food',
-    seatedMin: 0,
-    kidOk: true,
-    indoor: true,
-    defaultWait: 15,
-    note: 'パン・ギャラクティック・ピザ・ポート。モバイルオーダーが使える',
-  },
-  {
-    id: 'porkroll',
-    name: 'ポークライスロール',
-    area: 'western',
-    kind: 'food',
-    seatedMin: 0,
-    kidOk: true,
-    indoor: false,
-    defaultWait: 15,
-    note: 'ペコスビル・カフェ。ジャングルクルーズ側ではなくウエスタンランド',
   },
   {
     id: 'pao',

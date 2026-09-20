@@ -74,8 +74,15 @@ function evaluate(f: Facility, ctx: Context): Suggestion | null {
   if (f.window && !inWindow(ctx.now, f.window)) return null
   // 5人で動くので、柊が入れないものは家族の選択肢にならない
   if (!f.kidOk) return null
-  // ベビーカーから降ろせない＝ライドとグリーティングは寝ている間まるごと落ちる
-  if (ctx.hiiragi === 'asleep' && (f.kind === 'ride' || f.kind === 'greeting')) return null
+  // ベビーカーから降ろせない＝ライドとグリーティングは寝ている間まるごと落ちる。
+  // ただしベビーカーのまま乗れるものは例外。昼寝中に大人が座れる数少ない手なので残す
+  if (
+    ctx.hiiragi === 'asleep' &&
+    (f.kind === 'ride' || f.kind === 'greeting') &&
+    !f.strollerOk
+  ) {
+    return null
+  }
 
   const walkM = AREA_DISTANCE[ctx.area][f.area]
   const walkMin = walkMinutes(ctx.area, f.area)
@@ -149,9 +156,9 @@ function evaluate(f: Facility, ctx: Context): Suggestion | null {
         score += 30
         reasons.push('寝ている今のうちに済ませられます')
       }
-      if (f.kind === 'parade' && f.strollerOk) {
+      if (f.strollerOk) {
         score += 20
-        reasons.push('ベビーカーのまま観られます')
+        reasons.push(f.kind === 'parade' ? 'ベビーカーのまま観られます' : 'ベビーカーのまま乗れます')
       }
       // 昼寝は「ロス」ではなく「歩く時間」
       if (walkM >= 250) {
