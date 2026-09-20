@@ -1,5 +1,5 @@
 import { BY_ID } from '../data/facilities'
-import { ENTRY_TIME, PLAN } from '../data/plan'
+import { ENTRY_TIME, LEFT_OUT, PLAN } from '../data/plan'
 import type { Access, Context, Facility } from '../types'
 
 /**
@@ -65,7 +65,14 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
 
   // 予定に載っているものに加えて、「絶対行く」に指定したものも対象にする。
   // 予定外でもマストにしたなら、手配の要否は知りたい。
-  const ids = [...new Set([...PLAN.map((p) => p.facilityId), ...ctx.must])]
+  //
+  // 予定から落としたものでも、**抽選だけは対象に戻す**。
+  // 無料で、1日1回きりで、当たれば予定を組み替える価値がある。
+  // 引かない理由が無いものを、予定に無いという理由だけで隠すのは間違い。
+  const lotteries = LEFT_OUT.filter((x) => BY_ID[x.facilityId]?.access?.kind === 'entry').map(
+    (x) => x.facilityId,
+  )
+  const ids = [...new Set([...PLAN.map((p) => p.facilityId), ...ctx.must, ...lotteries])]
 
   for (const id of ids) {
     const f = id ? BY_ID[id] : undefined
@@ -95,6 +102,20 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
         detail: '幼児も人数に入れて予約すること',
         urgency: 'now',
         reason: a.hint,
+      })
+      continue
+    }
+
+    // エントリー受付は60分のしばりが無い。かわりに1日1回きりなので、
+    // 「入園したら真っ先に引く」以外に正解が無い。だから常に最優先で出す。
+    if (a.kind === 'entry') {
+      out.push({
+        facility: f,
+        access: a,
+        label: `${f.name}の抽選を引く`,
+        detail: '無料・1日1回きり',
+        urgency: inPark ? 'now' : 'later',
+        reason: inPark ? a.hint : `入園しないと引けません（${ENTRY_TIME}以降）`,
       })
       continue
     }
@@ -142,12 +163,15 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
     })
   }
 
-  // 急ぐものから。同じ強さなら売り切れやすい方を先に
+  // 急ぐものから。同じ強さなら、取り返しのつかない方を先に。
+  // 抽選は1日1回きりで金でも解決できないので、DPAより必ず上に置く。
   const rank: Record<Urgency, number> = { now: 0, blocked: 1, later: 2, missed: 3 }
+  const kindRank = { entry: 0, ps: 1, dpa: 2 } as const
   const riskRank = { high: 0, mid: 1, low: 2 } as const
   return out.sort(
     (x, y) =>
       rank[x.urgency] - rank[y.urgency] ||
+      kindRank[x.access.kind] - kindRank[y.access.kind] ||
       riskRank[x.access.risk] - riskRank[y.access.risk],
   )
 }

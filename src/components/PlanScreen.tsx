@@ -1,3 +1,5 @@
+import { BY_ID } from '../data/facilities'
+import { LEFT_OUT } from '../data/plan'
 import type { TodoAction } from '../lib/actions'
 import type { Review } from '../lib/drift'
 import { hhmm } from '../lib/useTrip'
@@ -102,6 +104,23 @@ export default function PlanScreen({
       <p className="hint hint--center">
         「捨てる」を押しても、同じ行の「戻す」でいつでも元に戻せます。
       </p>
+
+      {/*
+        入らなかったものを理由つきで残す。
+        早く回れた日に「じゃあ何を足す？」をその場で決められるようにするため。
+      */}
+      <div className="section">
+        <p className="section__label">今回は入らなかったもの</p>
+        <p className="hint">予定より早く回れたら、ここから足せます。</p>
+        <div className="outs">
+          {LEFT_OUT.map((o) => (
+            <div className="out" key={o.facilityId}>
+              <div className="out__name">{BY_ID[o.facilityId]?.name ?? o.facilityId}</div>
+              <div className="out__why">{o.why}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

@@ -62,6 +62,8 @@ export type Facility = {
   repeatable?: boolean
   /** 行くために事前の手配が要るもの。無ければ並ぶだけ */
   access?: Access
+  /** 当日休止。候補にも予定にも出さないが、理由を残すため消さずに持つ */
+  closed?: boolean
   note?: string
 }
 
@@ -71,9 +73,13 @@ export type Facility = {
  * DPAは購入から60分、または利用開始時刻の早い方で次が買える。
  * **アトラクション枠とショー枠は別カウントなので同時に持てる**（公式FAQ）。
  * この lane はその区別のために要る。
+ *
+ * entry（エントリー受付）は性質がまるで違う。無料の抽選で、
+ * **1施設につき1日1回しか引けず、外れたらその日はもう手が無い**。
+ * 締切は公演開始の25分前。だから「いつ引くか」ではなく「引き忘れないか」が全て。
  */
 export type Access = {
-  kind: 'dpa' | 'ps'
+  kind: 'dpa' | 'ps' | 'entry'
   /** DPAの枠。アトラクションとショーで別々に60分のしばりがかかる */
   lane?: 'attraction' | 'show'
   /** 1人あたりの円 */

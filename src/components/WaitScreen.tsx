@@ -1,5 +1,5 @@
 import { AREA_NAME } from '../data/areas'
-import { FACILITIES } from '../data/facilities'
+import { OPEN_FACILITIES } from '../data/facilities'
 import type { TripState } from '../lib/useTrip'
 import type { Context } from '../types'
 
@@ -22,7 +22,7 @@ export default function WaitScreen({
   onToggleMust,
 }: Props) {
   // 待ち時間を打つ意味があるものだけ並べる。土産物屋や食事は省く
-  const targets = FACILITIES.filter(
+  const targets = OPEN_FACILITIES.filter(
     (f) => f.kind === 'ride' || f.kind === 'show' || f.kind === 'greeting' || f.kind === 'play',
   )
 

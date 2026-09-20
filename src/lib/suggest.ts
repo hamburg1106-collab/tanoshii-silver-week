@@ -1,5 +1,5 @@
 import { AREA_DISTANCE, EXIT_RANK, walkMinutes } from '../data/areas'
-import { BY_ID, FACILITIES } from '../data/facilities'
+import { BY_ID, OPEN_FACILITIES } from '../data/facilities'
 import type { Context, Facility, MustWarning, Suggestion } from '../types'
 
 /**
@@ -192,7 +192,7 @@ function evaluate(f: Facility, ctx: Context): Suggestion | null {
 }
 
 export function suggest(ctx: Context): Suggestion[] {
-  return FACILITIES.map((f) => evaluate(f, ctx))
+  return OPEN_FACILITIES.map((f) => evaluate(f, ctx))
     .filter((s): s is Suggestion => s !== null)
     .sort((a, b) => b.score - a.score)
 }

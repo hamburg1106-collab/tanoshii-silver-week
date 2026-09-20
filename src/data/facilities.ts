@@ -73,6 +73,8 @@ export const FACILITIES: Facility[] = [
     seatedMin: 2,
     kidOk: true,
     indoor: false,
+    closed: true,
+    note: '2026/1/5から10/22まで休止。9/22は動いていない',
   },
   {
     id: 'teaparty',
@@ -107,9 +109,9 @@ export const FACILITIES: Facility[] = [
     access: {
       kind: 'dpa',
       lane: 'attraction',
+      yen: 1000,
       risk: 'mid',
-      hint: 'DPA対象。価格は未確認なのでアプリで見ること',
-      unverified: true,
+      hint: 'ホリデーナイトメアー期間だけDPA対象。プーさんより安い',
     },
     note: '9/15からホリデーナイトメアー仕様。ふだんより怖くない',
   },
@@ -267,10 +269,32 @@ export const FACILITIES: Facility[] = [
     loud: true,
   },
 
-  // ───────── パレード ─────────
+  // ───────── パレード・ショー（時刻は2026-09-22の公演スケジュール） ─────────
   {
-    id: 'parade',
-    name: 'ザ・ヴィランズ・ハロウィーン',
+    id: 'harmony',
+    name: 'ディズニー・ハーモニー・イン・カラー',
+    area: 'plaza',
+    kind: 'parade',
+    seatedMin: 40,
+    kidOk: true,
+    indoor: false,
+    loud: true,
+    strollerOk: true,
+    defaultWait: 0,
+    // 13:00開始。昼寝の入りとちょうど重なるので、寝かせながら観る枠として使える
+    window: { from: '13:00', to: '13:45' },
+    access: {
+      kind: 'dpa',
+      lane: 'show',
+      yen: 2500,
+      risk: 'mid',
+      hint: 'ショー枠。買わなくても沿道から観られる',
+    },
+    note: 'これが「お昼のパレード」。ベビーカーのまま観られる',
+  },
+  {
+    id: 'villains',
+    name: 'ザ・ヴィランズ・ハロウィーン“Into the Frenzy”',
     area: 'plaza',
     kind: 'parade',
     seatedMin: 45,
@@ -279,18 +303,70 @@ export const FACILITIES: Facility[] = [
     loud: true,
     strollerOk: true,
     defaultWait: 0,
-    window: { from: '14:10', to: '15:30' },
+    // 16:35開始・約45分。17:30出発だと終わりまで観られない
+    window: { from: '16:35', to: '17:20' },
     access: {
       kind: 'dpa',
       lane: 'show',
-      yen: 2500,
+      yen: 3500,
       risk: 'high',
-      hint: 'ショー枠なので、アトラクションのDPAと同時に買える',
+      hint: 'ハロウィーンのパレード。DPAは1人3,500円と高い',
     },
-    note: 'ベビーカーのまま観られる。ただし大音量',
+    note: '炎とスモークの演出あり。幼児には刺激が強い',
+  },
+  {
+    id: 'mmw',
+    name: 'ミッキーのマジカルミュージックワールド',
+    area: 'fantasy',
+    kind: 'show',
+    seatedMin: 25,
+    kidOk: true,
+    indoor: true,
+    loud: true,
+    dark: true,
+    defaultWait: 20,
+    access: {
+      kind: 'entry',
+      risk: 'high',
+      hint: '抽選。入園したらすぐ引くこと。外れたらその日はもう引けない',
+    },
+    note: 'ファンタジーランド・フォレストシアター。約25分の着席ショー',
+  },
+  {
+    id: 'jamboree',
+    name: 'ジャンボリミッキー！レッツ・ダンス！',
+    area: 'adventure',
+    kind: 'show',
+    // 立って踊るプログラムなので、座れる時間としては数えない
+    seatedMin: 0,
+    kidOk: true,
+    indoor: false,
+    loud: true,
+    defaultWait: 20,
+    // 9/22は 14:40 / 15:55 / 17:45 / 19:00。昼寝明けに間に合うのは15:55の回
+    window: { from: '14:40', to: '16:20' },
+    access: {
+      kind: 'entry',
+      risk: 'high',
+      hint: '抽選。シアターオーリンズ。締切は各回の開始25分前',
+    },
+    note: '幼児がいちばん喜ぶ枠。ただし座れないので休息にはならない',
   },
 
   // ───────── 食事 ─────────
+  {
+    id: 'queenofhearts',
+    name: 'クイーン・オブ・ハートのバンケットホール',
+    area: 'fantasy',
+    kind: 'food',
+    seatedMin: 45,
+    kidOk: true,
+    indoor: true,
+    defaultWait: 20,
+    window: { from: '11:00', to: '14:30' },
+    // プライオリティ・シーティングの対象5店に入っていないので、予約という概念が無い
+    note: 'アリスの世界のバイキング形式カフェ。予約不要・先着順',
+  },
   {
     id: 'crystalpalace',
     name: 'クリスタルパレス・レストラン',
@@ -333,6 +409,76 @@ export const FACILITIES: Facility[] = [
     note: 'カレー。席数が多い',
   },
 
+  // ───────── 食べ歩き ─────────
+  // 場所は2026-09-20に確認したもの。本人の記憶と2件ずれていたので、
+  // 「どこで買えるか」を名前に持たせて取り違えを防ぐ。
+  {
+    id: 'pop-pepper',
+    name: 'ポップコーン ブラックペッパー',
+    area: 'western',
+    kind: 'food',
+    seatedMin: 0,
+    kidOk: true,
+    indoor: false,
+    defaultWait: 10,
+    note: 'カウボーイ・クックハウス前のワゴン。メリーゴーランド横ではない',
+  },
+  {
+    id: 'pop-shoyu',
+    name: 'ポップコーン しょうゆバター',
+    area: 'adventure',
+    kind: 'food',
+    seatedMin: 0,
+    kidOk: true,
+    indoor: false,
+    defaultWait: 10,
+    note: 'ザ・ガゼーボ横のワゴン。カリブの海賊のすぐそば',
+  },
+  {
+    id: 'waffle',
+    name: 'ミッキーワッフル',
+    area: 'bazaar',
+    kind: 'food',
+    seatedMin: 0,
+    kidOk: true,
+    indoor: true,
+    defaultWait: 15,
+    note: 'グレートアメリカン・ワッフルカンパニー。入口のワールドバザール内',
+  },
+  {
+    id: 'calzone',
+    name: 'チキンとトマトのカルツォーネ',
+    area: 'tomorrow',
+    kind: 'food',
+    seatedMin: 0,
+    kidOk: true,
+    indoor: true,
+    defaultWait: 15,
+    note: 'パン・ギャラクティック・ピザ・ポート。モバイルオーダーが使える',
+  },
+  {
+    id: 'porkroll',
+    name: 'ポークライスロール',
+    area: 'western',
+    kind: 'food',
+    seatedMin: 0,
+    kidOk: true,
+    indoor: false,
+    defaultWait: 15,
+    note: 'ペコスビル・カフェ。ジャングルクルーズ側ではなくウエスタンランド',
+  },
+  {
+    id: 'pao',
+    name: 'グローブシェイプ・チキンパオ',
+    area: 'toon',
+    kind: 'food',
+    seatedMin: 0,
+    kidOk: true,
+    indoor: false,
+    defaultWait: 15,
+    note: 'ヒューイ・デューイ・ルーイのグッドタイム・カフェ。店名は当日アプリで確認',
+  },
+
   // ───────── ワールドバザール ─────────
   {
     id: 'bazaar-shop',
@@ -357,6 +503,12 @@ export const FACILITIES: Facility[] = [
     repeatable: true,
   },
 ]
+
+/**
+ * 当日動いている施設だけ。候補出しと待ち時間の一覧はこちらを使う。
+ * FACILITIES から消さないのは、「なぜ候補に出ないのか」を残しておきたいから。
+ */
+export const OPEN_FACILITIES: Facility[] = FACILITIES.filter((f) => !f.closed)
 
 export const BY_ID: Record<string, Facility> = Object.fromEntries(
   FACILITIES.map((f) => [f.id, f]),
