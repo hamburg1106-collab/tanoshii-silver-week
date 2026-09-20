@@ -27,23 +27,30 @@ export type PlanItem = {
  */
 export const ENTRY_TIME = '09:50'
 
+/**
+ * 各行の時刻は、ひとつ前の行が終わる時刻＋エリア間の徒歩分から積み上げてある。
+ * 徒歩は areas.ts の距離を分速60m（高齢者ペース）で割った値。
+ * エリア間の合計は約2,850m・49分。列の中や店を探す歩きは別で、実際はもう少し歩く。
+ */
 export const PLAN: PlanItem[] = [
   { time: ENTRY_TIME, label: '入園（すぐ抽選2件とプーさんDPA）' },
-  // 朝いちばんが一日でいちばん空く。マストのジャングルクルーズをここに置く
-  { time: '10:00', label: 'ジャングルクルーズ', facilityId: 'jungle' },
+  // 朝いちばんが一日でいちばん空く。マストのジャングルクルーズをここに置く。
+  // 入園処理10分＋アドベンチャーランドまで7分で10:07になる
+  { time: '10:07', label: 'ジャングルクルーズ', facilityId: 'jungle' },
   { time: '10:45', label: 'ポップコーン しょうゆバター', facilityId: 'pop-shoyu' },
-  { time: '11:13', label: 'イッツ・ア・スモールワールド', facilityId: 'smallworld' },
-  // DPAは12時前後の枠を選ぶ。昼寝に入ると乗れなくなるので、午前中に使い切る
-  { time: '12:00', label: 'プーさんのハニーハント（DPA）', facilityId: 'pooh' },
-  { time: '12:10', label: 'クイーン・オブ・ハートで昼食', facilityId: 'queenofhearts' },
+  { time: '11:03', label: 'イッツ・ア・スモールワールド', facilityId: 'smallworld' },
+  // DPAは11:45〜12:45の枠を選ぶ。昼寝に入ると乗れなくなるので、午前中に使い切る
+  { time: '11:46', label: 'プーさんのハニーハント（DPA）', facilityId: 'pooh' },
+  { time: '12:05', label: 'クイーン・オブ・ハートで昼食', facilityId: 'queenofhearts' },
   // パレードは13:00〜13:45でルートを一周する。店を出てファンタジーランド側で拾う
   { time: '13:15', label: 'お昼のパレードをチラ見', facilityId: 'harmony' },
   // ここから約2時間、柊は昼寝。ベビーカーで動ける用事だけを並べてある
-  { time: '13:48', label: 'ミッキーワッフルとお土産', facilityId: 'bazaar-shop' },
-  { time: '14:47', label: 'チキンとトマトのカルツォーネ', facilityId: 'calzone' },
-  { time: '15:11', label: 'グローブシェイプ・チキンパオ', facilityId: 'pao' },
+  { time: '13:43', label: 'ミッキーワッフルとお土産', facilityId: 'bazaar-shop' },
+  { time: '14:35', label: 'チキンとトマトのカルツォーネ', facilityId: 'calzone' },
+  { time: '14:56', label: 'グローブシェイプ・チキンパオ', facilityId: 'pao' },
   // 起床後の主役。トゥーンタウンにいるうちに済ませる
-  { time: '15:30', label: 'ミッキーの家とミート・ミッキー', facilityId: 'meet-mickey' },
+  { time: '15:15', label: 'ミッキーの家とミート・ミッキー', facilityId: 'meet-mickey' },
+  // 退園まで52分の余白。祝日は待ちがブレるので、ここは埋めずに置いてある
   { time: '17:30', label: '出発' },
 ]
 
