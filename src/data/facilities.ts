@@ -331,9 +331,9 @@ export const FACILITIES: Facility[] = [
     access: {
       kind: 'entry',
       risk: 'high',
-      hint: '抽選。入園したらすぐ引くこと。外れたらその日はもう引けない',
+      hint: '抽選。公演時刻が未確定なので締切も出せない。入園したらすぐ引くこと',
     },
-    note: 'ファンタジーランド・フォレストシアター。約25分の着席ショー',
+    note: 'ファンタジーランド・フォレストシアター。約25分の着席ショー。1日4〜5回',
   },
   {
     id: 'jamboree',
@@ -346,7 +346,8 @@ export const FACILITIES: Facility[] = [
     indoor: false,
     loud: true,
     defaultWait: 20,
-    // 9/22は 14:40 / 15:55 / 17:45 / 19:00。昼寝明けに間に合うのは15:55の回
+    // 9/22の公演時刻。締切はこれの25分前なので、データが無いと逆算できない
+    showtimes: ['14:40', '15:55', '17:45', '19:00'],
     window: { from: '14:40', to: '16:20' },
     access: {
       kind: 'entry',

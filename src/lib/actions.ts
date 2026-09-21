@@ -19,6 +19,32 @@ import type { Access, Context, Facility } from '../types'
 /** DPAを続けて買えるようになるまでの分数 */
 export const DPA_COOLDOWN_MIN = 60
 
+/** エントリー受付の締切は、各回の開始何分前か */
+export const ENTRY_CUTOFF_MIN = 25
+
+/** 公演時刻しか分からないショーの、所要時間の見立て */
+const SHOW_LEN_MIN = 25
+
+/**
+ * 抽選をいつまでに引けばいいか。
+ *
+ * 締切は各回の25分前だが、素直に「最後の回の25分前」を出すと役に立たない。
+ * 9/22のジャンボリミッキーは19:00の回まであるので18:35が締切になるが、
+ * 18:00に退園する以上その回は取れても意味がない。
+ * **退園までに終わる最後の回**を基準にする。
+ */
+export function entryDeadline(f: Facility, ctx: Context): { deadline: Date; show: Date } | null {
+  if (!f.showtimes?.length) return null
+  const len = Math.max(f.seatedMin, SHOW_LEN_MIN)
+  const usable = f.showtimes
+    .map((t) => todayAt(ctx.now, t))
+    .filter((d) => !Number.isNaN(d.getTime()))
+    .filter((d) => d.getTime() + len * 60_000 <= ctx.leaveAt.getTime())
+  if (usable.length === 0) return null
+  const show = usable[usable.length - 1]
+  return { show, deadline: new Date(show.getTime() - ENTRY_CUTOFF_MIN * 60_000) }
+}
+
 export type Urgency = 'now' | 'blocked' | 'later' | 'standby' | 'missed'
 
 export type TodoAction = {
@@ -30,6 +56,8 @@ export type TodoAction = {
   reason: string
   /** blocked のとき、いつから買えるか */
   availableFrom?: Date
+  /** 抽選のとき、いつまでに引けばいいか */
+  deadline?: Date
 }
 
 function todayAt(base: Date, hhmm: string): Date {
@@ -143,13 +171,38 @@ export function todoActions(ctx: Context): TodoAction[] {
     // エントリー受付は60分のしばりが無い。かわりに1日1回きりなので、
     // 「入園したら真っ先に引く」以外に正解が無い。だから常に最優先で出す。
     if (a.kind === 'entry') {
+      const dl = entryDeadline(f, ctx)
+
+      // 締切を過ぎたら、引けても意味がない。粘らせずに切る
+      if (dl && ctx.now > dl.deadline) {
+        out.push({
+          facility: f,
+          access: a,
+          label: f.name,
+          detail: '抽選の締切を過ぎました',
+          urgency: 'missed',
+          reason: `${hhmmOf(dl.show)}の回が最後でした。締切はその25分前です`,
+          deadline: dl.deadline,
+        })
+        continue
+      }
+
+      const left = dl ? Math.round((dl.deadline.getTime() - ctx.now.getTime()) / 60_000) : null
       out.push({
         facility: f,
         access: a,
         label: `${f.name}の抽選を引く`,
-        detail: '無料・1日1回きり',
+        detail: dl ? `無料・1日1回きり・${hhmmOf(dl.deadline)}まで` : '無料・1日1回きり',
         urgency: inPark ? 'now' : 'later',
-        reason: inPark ? a.hint : notYet,
+        reason: !inPark
+          ? notYet
+          : dl
+            ? // 残りが何時間もあるうちに分で言われても頭に入らない。近いときだけ急かす
+              `${
+                left != null && left <= 90 ? `あと${left}分で締切` : `${hhmmOf(dl.deadline)}までに引く`
+              }。${hhmmOf(dl.show)}の回が、退園までに終わる最後の回です`
+            : a.hint,
+        deadline: dl?.deadline,
       })
       continue
     }
@@ -207,6 +260,31 @@ export function todoActions(ctx: Context): TodoAction[] {
       kindRank[x.access.kind] - kindRank[y.access.kind] ||
       riskRank[x.access.risk] - riskRank[y.access.risk],
   )
+}
+
+/** 抽選の締切が何分前になったら、画面の上で急かすか */
+export const ENTRY_ALERT_MIN = 45
+
+/**
+ * 締切が迫っている抽選。
+ * 引くのは無料で数十秒なので、迷わせずに「いま引け」とだけ言う。
+ */
+export function entryAlerts(
+  actions: TodoAction[],
+  now: Date,
+): { facility: Facility; minsLeft: number; message: string }[] {
+  return actions
+    .filter((a) => a.urgency === 'now' && a.access.kind === 'entry' && a.deadline)
+    .map((a) => ({
+      facility: a.facility,
+      minsLeft: Math.round(((a.deadline as Date).getTime() - now.getTime()) / 60_000),
+    }))
+    .filter((x) => x.minsLeft <= ENTRY_ALERT_MIN)
+    .sort((x, y) => x.minsLeft - y.minsLeft)
+    .map((x) => ({
+      ...x,
+      message: `${x.facility.name}の抽選は、あと${x.minsLeft}分で締切です。いま引いてください`,
+    }))
 }
 
 /** 利用開始の何分前から知らせるか。歩く時間はこれとは別に引く */

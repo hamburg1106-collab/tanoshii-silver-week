@@ -848,6 +848,13 @@ select {
   border-left-color: var(--pumpkin);
 }
 
+/* 抽選の締切。取り返しがつかないので、いちばん強く出す */
+.slot--lot {
+  background: var(--peach-soft);
+  color: #9c1f42;
+  border-left-color: var(--peach);
+}
+
 /* ───────── 取れた／ダメだった ───────── */
 
 .todo__acts {

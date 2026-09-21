@@ -8,7 +8,7 @@ import WaitScreen from './components/WaitScreen'
 import { APP_NAME, ATTRIBUTION } from './config'
 import { AREA_NAME } from './data/areas'
 import { BY_ID } from './data/facilities'
-import { slotWarnings, todoActions } from './lib/actions'
+import { entryAlerts, slotWarnings, todoActions } from './lib/actions'
 import { reviewPlan } from './lib/drift'
 import { mustWarnings, suggest } from './lib/suggest'
 import { hhmm, useTrip } from './lib/useTrip'
@@ -66,6 +66,8 @@ export default function App() {
   const todos = todoActions(ctx)
   // 買った枠を時間切れで捨てるのが一番もったいないので、警告より上に出す
   const slots = slotWarnings(ctx)
+  // 抽選は無料で数十秒。締切が近いなら、他の何より先に出す
+  const lotteries = entryAlerts(todos, now)
 
   const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
   const stale = autoAgeMin != null && autoAgeMin > STALE_MIN
@@ -190,6 +192,16 @@ export default function App() {
 
             {review.napNote && <p className="drift__nap">{review.napNote}</p>}
           </div>
+
+          {/*
+            抽選は1日1回きりで、締切を過ぎたら金でも取り返せない。
+            だからDPAの枠より前に出す。
+          */}
+          {lotteries.map((l) => (
+            <div className="slot slot--lot" key={l.facility.id}>
+              {l.message}
+            </div>
+          ))}
 
           {/* 金を払った枠が消えるのが一番痛いので、他の警告より前に出す */}
           {slots.map((s) => (

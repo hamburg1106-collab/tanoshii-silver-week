@@ -60,6 +60,11 @@ export type Facility = {
   window?: { from: string; to: string }
   /** 何度でも寄れるか。ベビーセンターやトイレ系だけ true */
   repeatable?: boolean
+  /**
+   * 公演時刻 'HH:mm'。抽選の締切を逆算するのに要る。
+   * 分からないものは持たせない（持たせると嘘の締切が出る）。
+   */
+  showtimes?: string[]
   /** 行くために事前の手配が要るもの。無ければ並ぶだけ */
   access?: Access
   /** 当日休止。候補にも予定にも出さないが、理由を残すため消さずに持つ */
