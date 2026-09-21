@@ -55,10 +55,20 @@ export function dwellMinutes(f: Facility): number {
   }
 }
 
+/**
+ * 手配済みの列に並ぶときの分数。
+ * DPAも当選したショーも専用入口だが、それでも多少は並ぶ。0にはしない。
+ */
+export const SECURED_WAIT_MIN = 10
+
 export function waitOf(
   f: Facility,
   ctx: Context,
 ): { min: number; open: boolean; known: boolean } {
+  // 手配が取れているなら、通常の列の長さは関係ない。
+  // ここを見落とすと、DPAを買ったのに予定は70分並ぶ前提のまま進み、
+  // 「このままだと入りません」が出続けて判断を誤らせる。
+  if (ctx.secured[f.id]) return { min: SECURED_WAIT_MIN, open: true, known: true }
   const w = ctx.waits[f.id]
   if (w) return { min: w.min, open: w.open, known: true }
   return { min: f.defaultWait ?? 15, open: true, known: false }

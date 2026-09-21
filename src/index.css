@@ -1196,6 +1196,12 @@ select {
   font-weight: 700;
 }
 
+/* 手配の結果で予定が動いたことを、その行で言う */
+.prow__note--fix {
+  color: var(--grape-deep);
+  font-weight: 700;
+}
+
 .prow--skipped {
   opacity: 0.65;
 }

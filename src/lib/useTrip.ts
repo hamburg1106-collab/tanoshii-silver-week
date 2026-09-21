@@ -331,6 +331,8 @@ export function useTrip() {
       waits: mergeWaits(auto?.waits, state.waits, now),
       done: state.done,
       must: state.must,
+      secured: state.secured,
+      failed: state.failed,
     }),
     [now, state, auto],
   )

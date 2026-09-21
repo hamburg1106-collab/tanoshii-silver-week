@@ -63,9 +63,9 @@ export default function App() {
   const warns = mustWarnings(ctx).filter((w) => w.level !== 'ok')
   const review = reviewPlan(ctx)
   const late = review.driftMin > 10
-  const todos = todoActions(ctx, state.secured, state.failed)
+  const todos = todoActions(ctx)
   // 買った枠を時間切れで捨てるのが一番もったいないので、警告より上に出す
-  const slots = slotWarnings(ctx, state.secured)
+  const slots = slotWarnings(ctx)
 
   const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
   const stale = autoAgeMin != null && autoAgeMin > STALE_MIN

@@ -72,11 +72,15 @@ export default function PlanScreen({
                     : 'out'
 
             return (
-              <div className={`prow prow--${state}`} key={r.item.time + r.item.label}>
-                <div className="prow__time">{r.item.time}</div>
+              <div className={`prow prow--${state}`} key={(id ?? '') + r.item.label}>
+                {/* 手配で枠が動いたら、動いたあとの時刻を出す（plannedAtが本当の予定） */}
+                <div className="prow__time">{hhmm(r.plannedAt)}</div>
 
                 <div className="prow__main">
                   <div className="prow__label">{r.item.label}</div>
+
+                  {/* 手配の結果で予定が動いたら、その理由をその場に出す */}
+                  {r.note && <div className="prow__note prow__note--fix">{r.note}</div>}
 
                   {wasSkipped && <div className="prow__note prow__note--skipped">捨てました</div>}
 

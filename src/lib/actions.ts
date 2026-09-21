@@ -1,7 +1,7 @@
 import { walkMinutes } from '../data/areas'
 import { BY_ID } from '../data/facilities'
 import { ENTRY_TIME, LEFT_OUT, PLAN } from '../data/plan'
-import type { Access, Context, Facility, Secured } from '../types'
+import type { Access, Context, Facility } from '../types'
 
 /**
  * 「予定の施設に行くために、いつ何をすればいいか」を出す。
@@ -44,15 +44,8 @@ function yenLabel(a: Access): string {
   return `1人 ${a.yen.toLocaleString()}円`
 }
 
-/**
- * @param secured 確保できた手配。施設id → { at, useAt }
- * @param failed  取れなかったもの（抽選に外れた・DPAが売り切れた）の施設id
- */
-export function todoActions(
-  ctx: Context,
-  secured: Record<string, Secured>,
-  failed: string[] = [],
-): TodoAction[] {
+export function todoActions(ctx: Context): TodoAction[] {
+  const { secured, failed } = ctx
   // 時計ではなく「入園した」を押したかどうかで判定する。
   // ゲートで待たされている間に「いま買えます」と出すのが、いちばん困る嘘なので。
   const inPark = ctx.enteredAt != null
@@ -235,9 +228,9 @@ export type SlotWarning = {
  * 60分ルールの計算が正確になるのは副産物で、
  * **買った枠を時間切れで捨てないこと**のほうが金額的に大きい。
  */
-export function slotWarnings(ctx: Context, secured: Record<string, Secured>): SlotWarning[] {
+export function slotWarnings(ctx: Context): SlotWarning[] {
   const out: SlotWarning[] = []
-  for (const [id, s] of Object.entries(secured)) {
+  for (const [id, s] of Object.entries(ctx.secured)) {
     const f = BY_ID[id]
     if (!f || !s.useAt) continue
     const useAt = todayAt(ctx.now, s.useAt)

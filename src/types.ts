@@ -146,6 +146,14 @@ export type Context = {
   done: string[]
   /** 必ず行くと決めた施設のid。効率で却下されない */
   must: string[]
+  /**
+   * 確保できた手配。予定の時刻と待ち時間の見積もりが、これで変わる。
+   * DPAが取れているのに「70分並ぶ」前提で計算し続けるのが、
+   * 予定が壊れて見える一番の原因だった。
+   */
+  secured: Record<string, Secured>
+  /** 取れなかったもの。抽選に外れたものは、その日もう行けない */
+  failed: string[]
 }
 
 export type Suggestion = {
