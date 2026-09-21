@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DEFAULT_LEAVE, STORAGE_KEY } from '../config'
 import { BY_ID } from '../data/facilities'
-import type { AreaId, Context, HiiragiMode, Wait } from '../types'
+import type { AreaId, Context, HiiragiMode, Secured, Wait } from '../types'
 import { readStorage, writeStorage } from './storage'
 import { type AutoWaits, fetchAutoWaits, mergeWaits } from './waits'
 
@@ -25,8 +25,10 @@ export type TripState = {
   must: string[]
   /** 手入力ぶんだけ。自動取得は別に持ち、表示時に混ぜる */
   waits: Record<string, Wait>
-  /** 確保できた手配（DPA・レストラン）。施設id → 確保した時刻(ISO)。DPAの60分しばりの起点になる */
-  secured: Record<string, string>
+  /** 確保できた手配。施設id → { 買った時刻, 利用開始時刻 }。60分しばりの起点になる */
+  secured: Record<string, Secured>
+  /** 取れなかったもの。抽選に外れた／DPAが売り切れた */
+  failed: string[]
 }
 
 function todayKey(d: Date = new Date()): string {
@@ -48,6 +50,7 @@ const INITIAL: TripState = {
   must: ['jungle'],
   waits: {},
   secured: {},
+  failed: [],
 }
 
 /**
@@ -63,7 +66,13 @@ function load(): TripState {
   if (!raw) return { ...INITIAL, day: today }
   try {
     const saved = { ...INITIAL, ...(JSON.parse(raw) as Partial<TripState>) }
-    return saved.day === today ? saved : { ...INITIAL, day: today }
+    if (saved.day !== today) return { ...INITIAL, day: today }
+    // 旧形式（施設id → 時刻の文字列）を読み込んだ場合に落ちないようにする
+    const secured: Record<string, Secured> = {}
+    for (const [id, v] of Object.entries(saved.secured ?? {})) {
+      secured[id] = typeof v === 'string' ? { at: v } : v
+    }
+    return { ...saved, secured, failed: saved.failed ?? [] }
   } catch {
     return { ...INITIAL, day: today }
   }
@@ -225,14 +234,44 @@ export function useTrip() {
     })
   }, [])
 
-  /** 手配が取れた／取り消した。DPAの60分しばりはここから数える */
-  const toggleSecured = useCallback((id: string) => {
+  /** 手配が取れた。DPAの60分しばりはここから数える */
+  const markSecured = useCallback((id: string) => {
+    setState((s) => ({
+      ...s,
+      secured: { ...s.secured, [id]: { at: new Date().toISOString() } },
+      failed: s.failed.filter((x) => x !== id),
+    }))
+  }, [])
+
+  /**
+   * 利用開始の時刻を入れる。'HH:mm'、空なら消す。
+   * 次のDPAが買える時刻がここで早まることがある。
+   */
+  const setUseAt = useCallback((id: string, useAt: string) => {
     setState((s) => {
-      if (s.secured[id]) {
-        const { [id]: _removed, ...rest } = s.secured
-        return { ...s, secured: rest }
+      const cur = s.secured[id]
+      if (!cur) return s
+      return { ...s, secured: { ...s.secured, [id]: { ...cur, useAt: useAt || undefined } } }
+    })
+  }, [])
+
+  /** 取れなかった。抽選は施設ごと終わり、DPAは並ぶ選択肢が残る */
+  const markFailed = useCallback((id: string) => {
+    setState((s) => {
+      const { [id]: _removed, ...rest } = s.secured
+      return {
+        ...s,
+        secured: rest,
+        failed: s.failed.includes(id) ? s.failed : [...s.failed, id],
       }
-      return { ...s, secured: { ...s.secured, [id]: new Date().toISOString() } }
+    })
+  }, [])
+
+  /** 手配の記録を消して、やることリストに戻す */
+  const clearAccess = useCallback((id: string) => {
+    setState((s) => {
+      const { [id]: _removed, ...rest } = s.secured
+      return { ...s, secured: rest, failed: s.failed.filter((x) => x !== id) }
     })
   }, [])
 
@@ -313,7 +352,10 @@ export function useTrip() {
     setWait,
     clearWait,
     toggleMust,
-    toggleSecured,
+    markSecured,
+    setUseAt,
+    markFailed,
+    clearAccess,
     skip,
     undo,
     undoLast,

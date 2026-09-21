@@ -1,6 +1,7 @@
+import { walkMinutes } from '../data/areas'
 import { BY_ID } from '../data/facilities'
 import { ENTRY_TIME, LEFT_OUT, PLAN } from '../data/plan'
-import type { Access, Context, Facility } from '../types'
+import type { Access, Context, Facility, Secured } from '../types'
 
 /**
  * 「予定の施設に行くために、いつ何をすればいいか」を出す。
@@ -18,7 +19,7 @@ import type { Access, Context, Facility } from '../types'
 /** DPAを続けて買えるようになるまでの分数 */
 export const DPA_COOLDOWN_MIN = 60
 
-export type Urgency = 'now' | 'blocked' | 'later' | 'missed'
+export type Urgency = 'now' | 'blocked' | 'later' | 'standby' | 'missed'
 
 export type TodoAction = {
   facility: Facility
@@ -44,9 +45,14 @@ function yenLabel(a: Access): string {
 }
 
 /**
- * @param secured 確保済みの手配。施設id → 確保した時刻(ISO)
+ * @param secured 確保できた手配。施設id → { at, useAt }
+ * @param failed  取れなかったもの（抽選に外れた・DPAが売り切れた）の施設id
  */
-export function todoActions(ctx: Context, secured: Record<string, string>): TodoAction[] {
+export function todoActions(
+  ctx: Context,
+  secured: Record<string, Secured>,
+  failed: string[] = [],
+): TodoAction[] {
   // 時計ではなく「入園した」を押したかどうかで判定する。
   // ゲートで待たされている間に「いま買えます」と出すのが、いちばん困る嘘なので。
   const inPark = ctx.enteredAt != null
@@ -56,15 +62,26 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
     ? '「入園した」を押すと、ここに手順が出ます'
     : `入園しないと動かせません（予定は${ENTRY_TIME}）`
 
-  // 枠ごとに、直近で確保したDPAの時刻を拾う。
-  // 60分のしばりは枠ごとに別々にかかる
-  const lastByLane: Record<string, Date> = {}
-  for (const [id, iso] of Object.entries(secured)) {
+  // 枠ごとに、直近で確保したDPAがいつ解禁されるかを出す。
+  // 60分のしばりは枠ごとに別々にかかる。
+  // 解禁は「購入＋60分」と「利用開始時刻」の早い方。利用開始が未入力なら
+  // 長い方（購入＋60分）に倒す。早めに出して買えない方が困るため。
+  const openByLane: Record<string, Date> = {}
+  const latestByLane: Record<string, Date> = {}
+  for (const [id, s] of Object.entries(secured)) {
     const lane = BY_ID[id]?.access?.lane
     if (!lane) continue
-    const at = new Date(iso)
+    const at = new Date(s.at)
     if (Number.isNaN(at.getTime())) continue
-    if (!lastByLane[lane] || at > lastByLane[lane]) lastByLane[lane] = at
+    if (latestByLane[lane] && at <= latestByLane[lane]) continue
+    latestByLane[lane] = at
+
+    let open = new Date(at.getTime() + DPA_COOLDOWN_MIN * 60_000)
+    if (s.useAt) {
+      const use = todayAt(ctx.now, s.useAt)
+      if (!Number.isNaN(use.getTime()) && use < open) open = use
+    }
+    openByLane[lane] = open
   }
 
   const out: TodoAction[] = []
@@ -86,6 +103,24 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
     if (!f || !a) continue
     // 確保済み・行った・捨てたものは出さない
     if (secured[f.id] || ctx.done.includes(f.id)) continue
+
+    // 取れなかったもの。ここは手段によって意味がまるで違う。
+    // 抽選は1日1回きりなので外れたら施設ごと消える。
+    // DPAは「早く乗る手段」が消えただけで、並べば乗れる。
+    if (failed.includes(f.id)) {
+      out.push({
+        facility: f,
+        access: a,
+        label: f.name,
+        detail: a.kind === 'entry' ? '抽選に外れました' : 'DPAは買えませんでした',
+        urgency: a.kind === 'entry' ? 'missed' : 'standby',
+        reason:
+          a.kind === 'entry'
+            ? '同じ施設はもう引けません。今日は諦めるか、自由席のある回を狙います'
+            : '並べば乗れます。待ち時間タブで実際の列を確認してください',
+      })
+      continue
+    }
 
     // やれる時間が終わっていたら、もう手の打ちようがない
     if (f.window && ctx.now > todayAt(ctx.now, f.window.to)) {
@@ -143,8 +178,7 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
       continue
     }
 
-    const last = a.lane ? lastByLane[a.lane] : undefined
-    const openAt = last ? new Date(last.getTime() + DPA_COOLDOWN_MIN * 60_000) : null
+    const openAt = a.lane ? (openByLane[a.lane] ?? null) : null
 
     if (openAt && ctx.now < openAt) {
       out.push({
@@ -171,7 +205,7 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
 
   // 急ぐものから。同じ強さなら、取り返しのつかない方を先に。
   // 抽選は1日1回きりで金でも解決できないので、DPAより必ず上に置く。
-  const rank: Record<Urgency, number> = { now: 0, blocked: 1, later: 2, missed: 3 }
+  const rank: Record<Urgency, number> = { now: 0, blocked: 1, later: 2, standby: 3, missed: 4 }
   const kindRank = { entry: 0, ps: 1, dpa: 2 } as const
   const riskRank = { high: 0, mid: 1, low: 2 } as const
   return out.sort(
@@ -180,6 +214,58 @@ export function todoActions(ctx: Context, secured: Record<string, string>): Todo
       kindRank[x.access.kind] - kindRank[y.access.kind] ||
       riskRank[x.access.risk] - riskRank[y.access.risk],
   )
+}
+
+/** 利用開始の何分前から知らせるか。歩く時間はこれとは別に引く */
+const SLOT_HEADS_UP_MIN = 20
+
+/** DPAの枠は時間指定。買ったのに時間を過ぎて無効、が一番もったいない */
+export type SlotWarning = {
+  facility: Facility
+  useAt: Date
+  /** いま出発するまでの余裕（分）。マイナスなら出遅れている */
+  slackMin: number
+  message: string
+}
+
+/**
+ * 確保した枠の利用開始が近いものを知らせる。
+ *
+ * 利用開始時刻を入れてもらう本当の狙いはこっち。
+ * 60分ルールの計算が正確になるのは副産物で、
+ * **買った枠を時間切れで捨てないこと**のほうが金額的に大きい。
+ */
+export function slotWarnings(ctx: Context, secured: Record<string, Secured>): SlotWarning[] {
+  const out: SlotWarning[] = []
+  for (const [id, s] of Object.entries(secured)) {
+    const f = BY_ID[id]
+    if (!f || !s.useAt) continue
+    const useAt = todayAt(ctx.now, s.useAt)
+    if (Number.isNaN(useAt.getTime())) continue
+    // 利用時間帯を過ぎたら、もう知らせても仕方がない
+    if (ctx.now.getTime() > useAt.getTime() + 60 * 60_000) continue
+    if (ctx.done.includes(id)) continue
+
+    const walk = walkMinutes(ctx.area, f.area)
+    const leaveBy = useAt.getTime() - walk * 60_000
+    const slackMin = Math.round((leaveBy - ctx.now.getTime()) / 60_000)
+    if (slackMin > SLOT_HEADS_UP_MIN) continue
+
+    out.push({
+      facility: f,
+      useAt,
+      slackMin,
+      message:
+        slackMin > 0
+          ? `あと${slackMin}分で${f.name}へ出てください（${hhmmOf(useAt)}開始・歩き${walk}分）`
+          : `${f.name}は${hhmmOf(useAt)}開始です。いますぐ向かってください`,
+    })
+  }
+  return out.sort((a, b) => a.slackMin - b.slackMin)
+}
+
+function hhmmOf(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 /**

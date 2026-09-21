@@ -92,6 +92,21 @@ export type Access = {
   unverified?: boolean
 }
 
+/**
+ * 確保できた手配1件。
+ *
+ * useAt を持つのは記録のためではない。DPAの次が買えるのは
+ * 「購入から60分後」と「利用開始時刻」の**早い方**なので、
+ * 利用開始が分からないと常に長いほう（購入＋60分）で待たせることになる。
+ * 10:00に買って10:30開始の枠なら、次は10:30に買える。30分ちがう。
+ */
+export type Secured = {
+  /** 買った・引いた時刻(ISO) */
+  at: string
+  /** 利用開始の時刻 'HH:mm'。入れると次の解禁が早まる */
+  useAt?: string
+}
+
 /** 柊の状態。減点ではなくモードとして扱う */
 export type HiiragiMode = 'genki' | 'sleepy' | 'asleep' | 'justWoke'
 

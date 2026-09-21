@@ -8,7 +8,7 @@ import WaitScreen from './components/WaitScreen'
 import { APP_NAME, ATTRIBUTION } from './config'
 import { AREA_NAME } from './data/areas'
 import { BY_ID } from './data/facilities'
-import { todoActions } from './lib/actions'
+import { slotWarnings, todoActions } from './lib/actions'
 import { reviewPlan } from './lib/drift'
 import { mustWarnings, suggest } from './lib/suggest'
 import { hhmm, useTrip } from './lib/useTrip'
@@ -45,7 +45,10 @@ export default function App() {
     setWait,
     clearWait,
     toggleMust,
-    toggleSecured,
+    markSecured,
+    setUseAt,
+    markFailed,
+    clearAccess,
     skip,
     undo,
     undoLast,
@@ -60,7 +63,9 @@ export default function App() {
   const warns = mustWarnings(ctx).filter((w) => w.level !== 'ok')
   const review = reviewPlan(ctx)
   const late = review.driftMin > 10
-  const todos = todoActions(ctx, state.secured)
+  const todos = todoActions(ctx, state.secured, state.failed)
+  // 買った枠を時間切れで捨てるのが一番もったいないので、警告より上に出す
+  const slots = slotWarnings(ctx, state.secured)
 
   const autoAgeMin = auto ? Math.round((now.getTime() - auto.at.getTime()) / 60000) : null
   const stale = autoAgeMin != null && autoAgeMin > STALE_MIN
@@ -186,6 +191,16 @@ export default function App() {
             {review.napNote && <p className="drift__nap">{review.napNote}</p>}
           </div>
 
+          {/* 金を払った枠が消えるのが一番痛いので、他の警告より前に出す */}
+          {slots.map((s) => (
+            <div
+              className={`slot ${s.slackMin <= 0 ? 'slot--late' : ''}`}
+              key={s.facility.id}
+            >
+              {s.message}
+            </div>
+          ))}
+
           {warns.map((w) => (
             <div className={`warn warn--${w.level}`} key={w.facility.id}>
               {w.message}
@@ -193,7 +208,16 @@ export default function App() {
           ))}
 
           {/* 急ぎの手配だけ。全部は「よてい」に出す */}
-          <TodoList actions={todos} secured={state.secured} onToggle={toggleSecured} compact />
+          <TodoList
+            actions={todos}
+            secured={state.secured}
+            failed={state.failed}
+            onSecured={markSecured}
+            onFailed={markFailed}
+            onUseAt={setUseAt}
+            onClear={clearAccess}
+            compact
+          />
 
           <div className="section">
             <p className="section__label">つぎ、ここ</p>
@@ -240,7 +264,11 @@ export default function App() {
           skipped={state.skipped}
           todos={todos}
           secured={state.secured}
-          onToggleSecured={toggleSecured}
+          failed={state.failed}
+          onSecured={markSecured}
+          onFailed={markFailed}
+          onUseAt={setUseAt}
+          onClearAccess={clearAccess}
           onSkip={skip}
           onUndo={undo}
         />

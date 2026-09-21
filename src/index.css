@@ -37,6 +37,8 @@
   --line: #f0e7f5;
   /* 罫線の濃い方。--line は薄すぎて、帯や枠に使うと消えてしまう */
   --line-strong: #d7c8e3;
+  /* 白より一段沈めた面。タグの地色など、主張させたくないものに使う */
+  --surface-2: #f3edf8;
 
   --shadow: 0 6px 20px rgba(142, 95, 216, 0.12);
   --shadow-lift: 0 10px 28px rgba(142, 95, 216, 0.2);
@@ -405,48 +407,8 @@ select {
   line-height: 1.6;
 }
 
-.todo__done {
-  margin-top: 12px;
-  width: 100%;
-  border-radius: 999px;
-  padding: 12px;
-  min-height: 48px;
-  font-size: 0.92rem;
-  font-weight: 800;
-  background: var(--grape);
-  color: #fff;
-  transition: transform 0.12s ease;
-}
-
-.todo__done:active {
-  transform: scale(0.97);
-}
-
 .secured {
   margin-top: 20px;
-}
-
-.secured__row {
-  width: 100%;
-  text-align: left;
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 12px 15px;
-  margin-bottom: 8px;
-  display: grid;
-  gap: 2px;
-  box-shadow: 0 2px 8px rgba(142, 95, 216, 0.07);
-}
-
-.secured__name {
-  font-weight: 700;
-  font-size: 0.93rem;
-}
-
-.secured__at {
-  font-size: 0.8rem;
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ───────── 本命カード ───────── */
@@ -864,6 +826,173 @@ select {
 .hint--center {
   text-align: center;
   margin: 18px 0 0;
+}
+
+/* ───────── 確保した枠の時間切れ警告 ───────── */
+
+.slot {
+  background: var(--mint-soft);
+  color: #0a5c50;
+  border-left: 5px solid var(--mint-ink);
+  border-radius: 14px;
+  padding: 13px 16px;
+  margin-bottom: 10px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.slot--late {
+  background: var(--pumpkin-soft);
+  color: #8a3d00;
+  border-left-color: var(--pumpkin);
+}
+
+/* ───────── 取れた／ダメだった ───────── */
+
+.todo__acts {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.todo__act {
+  flex: 1;
+  min-height: 46px;
+  border-radius: 14px;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.todo__act--ok {
+  background: var(--mint-ink);
+  color: #fff;
+}
+
+.todo__act--ng {
+  background: var(--surface);
+  color: var(--ink-soft);
+  border: 1.5px solid var(--line-strong);
+}
+
+.todo__act--undo {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.todo--standby {
+  border-left-color: var(--night);
+  opacity: 0.9;
+}
+
+/* ───────── 取れたものの一覧 ───────── */
+
+.secured__row {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 13px 15px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 10px rgba(142, 95, 216, 0.08);
+}
+
+.secured__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.secured__name {
+  font-weight: 700;
+  font-size: 0.93rem;
+}
+
+.secured__undo {
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--ground);
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.secured__at {
+  margin-top: 2px;
+  font-size: 0.79rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.secured__use {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.secured__use-label {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.secured__use-input {
+  flex: 1;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.secured__hint {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+.failed__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 15px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--ground);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.failed__row .secured__name {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+}
+
+.failed__row .secured__at {
+  margin: 0 0 0 auto;
 }
 
 /* ───────── 入園ボタン ───────── */

@@ -3,6 +3,7 @@ import { LEFT_OUT } from '../data/plan'
 import type { TodoAction } from '../lib/actions'
 import type { Review } from '../lib/drift'
 import { hhmm } from '../lib/useTrip'
+import type { Secured } from '../types'
 import TodoList from './TodoList'
 
 type Props = {
@@ -10,8 +11,12 @@ type Props = {
   /** 捨てたもののid。行ったものと区別して出す */
   skipped: string[]
   todos: TodoAction[]
-  secured: Record<string, string>
-  onToggleSecured: (id: string) => void
+  secured: Record<string, Secured>
+  failed: string[]
+  onSecured: (id: string) => void
+  onFailed: (id: string) => void
+  onUseAt: (id: string, useAt: string) => void
+  onClearAccess: (id: string) => void
   onSkip: (id: string) => void
   onUndo: (id: string) => void
 }
@@ -21,19 +26,31 @@ export default function PlanScreen({
   skipped,
   todos,
   secured,
-  onToggleSecured,
+  failed,
+  onSecured,
+  onFailed,
+  onUseAt,
+  onClearAccess,
   onSkip,
   onUndo,
 }: Props) {
   return (
     <div className="body">
-      {(todos.length > 0 || Object.keys(secured).length > 0) && (
+      {(todos.length > 0 || Object.keys(secured).length > 0 || failed.length > 0) && (
         <div className="section">
           <p className="section__label">行くためにやること</p>
           <p className="hint">
             並ぶだけで入れるものは出ません。手配が要るものだけです。
           </p>
-          <TodoList actions={todos} secured={secured} onToggle={onToggleSecured} />
+          <TodoList
+            actions={todos}
+            secured={secured}
+            failed={failed}
+            onSecured={onSecured}
+            onFailed={onFailed}
+            onUseAt={onUseAt}
+            onClear={onClearAccess}
+          />
         </div>
       )}
 
